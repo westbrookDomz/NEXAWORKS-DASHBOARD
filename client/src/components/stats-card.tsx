@@ -1,40 +1,84 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { ArrowUp, ArrowDown, Triangle } from "lucide-react";
 
 interface StatsCardProps {
   title: string;
   value: string;
-  change?: string;
+  variance: string;
+  varianceLabel?: string;
   trend?: "up" | "down" | "neutral";
-  icon?: React.ReactNode;
-  className?: string;
+  chartColor?: "primary" | "purple" | "orange" | "blue";
+  data?: number[];
 }
 
-export default function StatsCard({ title, value, change, trend, icon, className }: StatsCardProps) {
+export default function StatsCard({ 
+  title, 
+  value, 
+  variance, 
+  varianceLabel, 
+  trend = "neutral", 
+  chartColor = "primary",
+  data = [40, 30, 50, 40, 60, 55, 70, 60, 80]
+}: StatsCardProps) {
+  
+  const getColorClass = (color: string) => {
+    switch(color) {
+      case "primary": return "bg-primary";
+      case "purple": return "bg-[#a78bfa]"; // Tailwind purple-400 equivalent
+      case "orange": return "bg-[#fb923c]"; // Tailwind orange-400 equivalent
+      case "blue": return "bg-[#60a5fa]";   // Tailwind blue-400 equivalent
+      default: return "bg-primary";
+    }
+  };
+
+  const getTextColorClass = (color: string) => {
+    switch(color) {
+      case "primary": return "text-primary";
+      case "purple": return "text-[#a78bfa]";
+      case "orange": return "text-[#fb923c]";
+      case "blue": return "text-[#60a5fa]";
+      default: return "text-primary";
+    }
+  };
+
   return (
-    <Card className={cn("glass-panel border-border/50 hover:border-primary/30 transition-colors", className)}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-          {title}
-        </CardTitle>
-        {icon && <div className="text-muted-foreground">{icon}</div>}
-      </CardHeader>
-      <CardContent>
-        <div className="text-3xl font-bold font-display tracking-tight">{value}</div>
-        {change && (
-          <p className={cn("text-xs flex items-center mt-2 font-medium", 
-            trend === "up" ? "text-primary" : 
-            trend === "down" ? "text-red-400" : 
-            "text-muted-foreground"
-          )}>
-            {trend === "up" && <ArrowUpRight className="w-3 h-3 mr-1" />}
-            {trend === "down" && <ArrowDownRight className="w-3 h-3 mr-1" />}
-            {change}
-            <span className="text-muted-foreground ml-1 font-normal">vs last month</span>
-          </p>
-        )}
-      </CardContent>
+    <Card className="glass-panel border-border/50 bg-card p-5 rounded-2xl relative overflow-hidden group hover:border-white/10 transition-colors">
+      <div className="flex flex-col h-full justify-between">
+        <div className="space-y-1">
+          <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
+          <p className="text-sm text-muted-foreground mb-4">Variance</p>
+        </div>
+        
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <span className={cn("text-sm font-bold flex items-center gap-1", getTextColorClass(chartColor))}>
+              {variance}
+              <Triangle className={cn("w-2 h-2 fill-current rotate-0", trend === "down" && "rotate-180")} />
+            </span>
+            <span className="text-2xl font-bold text-foreground ml-auto">{value}</span>
+          </div>
+          
+          <div className="flex items-center gap-2 pt-2">
+             <span className="text-xs text-muted-foreground font-medium">Jan</span>
+             {/* Custom Mini Bar Chart */}
+             <div className="flex-1 h-2 flex items-end gap-[2px]">
+               {data.map((h, i) => (
+                 <div 
+                   key={i} 
+                   className={cn("w-full rounded-sm opacity-30 group-hover:opacity-60 transition-opacity", getColorClass(chartColor))}
+                   style={{ height: `${h}%` }} 
+                 />
+               ))}
+               {/* Last bar is active/bright */}
+               <div 
+                   className={cn("w-full rounded-sm", getColorClass(chartColor))}
+                   style={{ height: `65%` }} 
+               />
+             </div>
+          </div>
+        </div>
+      </div>
     </Card>
   );
 }
