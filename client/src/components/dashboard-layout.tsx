@@ -37,15 +37,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <aside className="w-72 bg-background border-r border-border/40 hidden md:flex flex-col h-screen overflow-y-auto scrollbar-none">
         <div className="p-6 flex items-center gap-3">
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-background font-bold text-xl">
-            U
+            N
           </div>
+          <span className="font-bold text-lg tracking-tight">Nexaworks</span>
         </div>
 
         <div className="px-6 mb-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input 
-              placeholder="Search ..." 
+              placeholder="Search projects..." 
               className="pl-9 bg-card border-none h-10 text-sm rounded-xl focus-visible:ring-1 focus-visible:ring-primary/50"
             />
           </div>
@@ -59,14 +60,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Button variant="ghost" className="w-full justify-between text-muted-foreground hover:text-foreground hover:bg-card rounded-xl h-10 px-3">
                 <span className="flex items-center gap-3">
                   <FolderKanban className="w-4 h-4" />
-                  Pending
+                  Unpaid Invoices
                 </span>
                 <ChevronDown className="w-4 h-4 opacity-50" />
               </Button>
               <Button variant="ghost" className="w-full justify-between text-muted-foreground hover:text-foreground hover:bg-card rounded-xl h-10 px-3">
                 <span className="flex items-center gap-3">
                   <Briefcase className="w-4 h-4" />
-                  Tag
+                  Client Tag
                 </span>
                 <ChevronDown className="w-4 h-4 opacity-50" />
               </Button>
@@ -79,49 +80,30 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <RadioGroup defaultValue="month" className="space-y-1">
               <div className="flex items-center space-x-3 px-3 py-2 rounded-xl hover:bg-card cursor-pointer group">
                 <RadioGroupItem value="month" id="month" className="border-muted-foreground text-primary" />
-                <Label htmlFor="month" className="text-sm font-medium text-foreground cursor-pointer flex-1">Month to date</Label>
+                <Label htmlFor="month" className="text-sm font-medium text-foreground cursor-pointer flex-1">This Month</Label>
               </div>
               <div className="flex items-center space-x-3 px-3 py-2 rounded-xl hover:bg-card cursor-pointer group">
                 <RadioGroupItem value="year" id="year" className="border-muted-foreground text-primary" />
-                <Label htmlFor="year" className="text-sm font-medium text-muted-foreground group-hover:text-foreground cursor-pointer flex-1">Year to date</Label>
+                <Label htmlFor="year" className="text-sm font-medium text-muted-foreground group-hover:text-foreground cursor-pointer flex-1">This Year</Label>
               </div>
             </RadioGroup>
           </div>
 
-          {/* Benchmark Section */}
-          <div>
-            <h3 className="px-2 text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Benchmark</h3>
-            <RadioGroup defaultValue="budget" className="space-y-1">
-              <div className="flex items-center space-x-3 px-3 py-2 rounded-xl hover:bg-card cursor-pointer group">
-                <RadioGroupItem value="budget" id="budget" className="border-muted-foreground text-primary" />
-                <Label htmlFor="budget" className="text-sm font-medium text-foreground cursor-pointer flex-1">Budget</Label>
-              </div>
-              <div className="flex items-center space-x-3 px-3 py-2 rounded-xl hover:bg-card cursor-pointer group">
-                <RadioGroupItem value="prior" id="prior" className="border-muted-foreground text-primary" />
-                <Label htmlFor="prior" className="text-sm font-medium text-muted-foreground group-hover:text-foreground cursor-pointer flex-1">Prior month</Label>
-              </div>
-              <div className="flex items-center space-x-3 px-3 py-2 rounded-xl hover:bg-card cursor-pointer group">
-                <RadioGroupItem value="same" id="same" className="border-muted-foreground text-primary" />
-                <Label htmlFor="same" className="text-sm font-medium text-muted-foreground group-hover:text-foreground cursor-pointer flex-1">Same month last year</Label>
-              </div>
-            </RadioGroup>
-          </div>
-
-           {/* Merchant Section */}
+          {/* Status Section */}
            <div>
-            <h3 className="px-2 text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Merchant</h3>
+            <h3 className="px-2 text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Status</h3>
             <RadioGroup defaultValue="all" className="space-y-1">
               <div className="flex items-center space-x-3 px-3 py-2 rounded-xl hover:bg-card cursor-pointer group">
                 <RadioGroupItem value="all" id="all" className="border-muted-foreground text-primary" />
                 <Label htmlFor="all" className="text-sm font-medium text-foreground cursor-pointer flex-1">All</Label>
               </div>
               <div className="flex items-center space-x-3 px-3 py-2 rounded-xl hover:bg-card cursor-pointer group">
-                <RadioGroupItem value="review" id="review" className="border-muted-foreground text-primary" />
-                <Label htmlFor="review" className="text-sm font-medium text-muted-foreground group-hover:text-foreground cursor-pointer flex-1">Need review</Label>
+                <RadioGroupItem value="pending" id="pending" className="border-muted-foreground text-primary" />
+                <Label htmlFor="pending" className="text-sm font-medium text-muted-foreground group-hover:text-foreground cursor-pointer flex-1">Pending Payment</Label>
               </div>
                <div className="flex items-center space-x-3 px-3 py-2 rounded-xl hover:bg-card cursor-pointer group">
-                <RadioGroupItem value="wait" id="wait" className="border-muted-foreground text-primary" />
-                <Label htmlFor="wait" className="text-sm font-medium text-muted-foreground group-hover:text-foreground cursor-pointer flex-1">Waiting list</Label>
+                <RadioGroupItem value="completed" id="completed" className="border-muted-foreground text-primary" />
+                <Label htmlFor="completed" className="text-sm font-medium text-muted-foreground group-hover:text-foreground cursor-pointer flex-1">Completed</Label>
               </div>
             </RadioGroup>
           </div>
@@ -138,11 +120,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                <div className="w-8 h-8 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mb-3">
                  <div className="w-4 h-4 text-white">⚡</div>
                </div>
-               <h4 className="font-semibold text-sm leading-tight mb-1">Boost your experience</h4>
-               <p className="text-xs text-primary-foreground/80 mb-4 leading-relaxed">and see all progress</p>
+               <h4 className="font-semibold text-sm leading-tight mb-1">Generate Invoice</h4>
+               <p className="text-xs text-primary-foreground/80 mb-4 leading-relaxed">Create a new invoice quickly</p>
                
                <Button variant="secondary" size="sm" className="w-full bg-white/20 hover:bg-white/30 text-white border-none justify-between group">
-                 Try now
+                 Create Now
                  <span className="group-hover:translate-x-1 transition-transform">→</span>
                </Button>
              </div>
@@ -155,15 +137,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Header */}
         <header className="h-20 px-8 border-b border-border/40 flex items-center justify-between shrink-0">
            <div className="flex items-center gap-8">
-              <h1 className="text-xl font-medium">Franchise Sale Overview</h1>
+              <h1 className="text-xl font-medium">Financial Overview</h1>
               
               <div className="flex items-center gap-3">
                  <div className="px-3 py-1.5 rounded-lg bg-card border border-border/50 text-sm text-muted-foreground">
-                   Work team
+                   Admin
                  </div>
                  <div className="flex items-center gap-2 text-sm font-medium">
-                   DA / RA Coffee
-                   <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                   Dominion
                  </div>
               </div>
            </div>
@@ -176,20 +157,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <Maximize2 className="w-5 h-5" />
               </Button>
               <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-                <Users className="w-5 h-5" />
+                <Bell className="w-5 h-5" />
               </Button>
               <div className="h-8 w-px bg-border mx-1"></div>
-              <Button variant="ghost" size="icon" className="text-primary bg-primary/10 rounded-full w-10 h-10">
-                <div className="w-5 h-5 relative">
-                   <div className="absolute inset-0 bg-primary blur-sm opacity-50"></div>
-                   <div className="relative z-10 w-3 h-3 bg-primary rounded-full top-1 left-1"></div>
-                </div>
-              </Button>
+              <Avatar className="w-10 h-10 border border-border cursor-pointer">
+                <AvatarImage src={profileImage} alt="Dominion" />
+                <AvatarFallback>D</AvatarFallback>
+              </Avatar>
            </div>
         </header>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-auto p-8">
+        <div className="flex-1 overflow-auto p-8 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-border">
           {children}
         </div>
       </main>
