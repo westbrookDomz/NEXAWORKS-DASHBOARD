@@ -1,68 +1,66 @@
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
-import { Card } from "@/components/ui/card";
+import { PieChart, Pie, Cell, ResponsiveContainer, Label } from "recharts";
 
 const data = [
-  { name: "Brand Identity", value: 45, color: "hsl(170 100% 45%)" }, // Primary Cyan
-  { name: "Web Design", value: 30, color: "hsl(260 100% 70%)" },    // Purple
-  { name: "Social Media", value: 15, color: "hsl(30 100% 60%)" },     // Orange
-  { name: "Consulting", value: 10, color: "hsl(210 100% 60%)" },    // Blue
+  { name: "Profit", value: 70, color: "hsl(var(--primary))" }, // Yellow
+  { name: "Loss", value: 20, color: "hsl(0, 0%, 25%)" },      // Dark Gray
+  { name: "Return", value: 10, color: "hsl(0, 0%, 15%)" },     // Darker Gray
 ];
 
 export default function DistributionChart() {
   return (
-    <div className="h-[420px] w-full border border-white/5 rounded-2xl p-6 bg-card/30 relative flex flex-col">
-      <h3 className="text-lg font-medium text-muted-foreground mb-4">Revenue Distribution</h3>
+    <div className="h-full w-full bg-card rounded-[2rem] p-8 flex flex-col">
+      <div className="mb-4">
+        <h3 className="text-lg font-bold text-white mb-1">Total Income</h3>
+        <p className="text-xs text-muted-foreground">View your income in a certain period of time</p>
+      </div>
       
-      <div className="flex-1 min-h-0 relative">
+      <div className="flex-1 min-h-0 relative -mt-8">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={data}
               cx="50%"
-              cy="50%"
+              cy="70%"
+              startAngle={180}
+              endAngle={0}
               innerRadius={80}
               outerRadius={110}
-              paddingAngle={5}
+              paddingAngle={0}
               dataKey="value"
               stroke="none"
+              cornerRadius={10}
             >
               {data.map((entry, index) => (
                 <Cell 
                   key={`cell-${index}`} 
                   fill={entry.color} 
-                  className="stroke-background stroke-2"
                 />
               ))}
             </Pie>
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "hsl(var(--card))",
-                borderColor: "hsl(var(--border))",
-                borderRadius: "8px",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
-                color: "hsl(var(--foreground))"
-              }}
-              itemStyle={{ color: "hsl(var(--foreground))" }}
-            />
-            <Legend 
-              verticalAlign="middle" 
-              align="right"
-              layout="vertical"
-              iconType="circle"
-              iconSize={8}
-              formatter={(value, entry: any) => (
-                <span className="text-sm text-muted-foreground ml-2">{value}</span>
-              )}
-              wrapperStyle={{ paddingLeft: "20px" }}
-            />
           </PieChart>
         </ResponsiveContainer>
         
-        {/* Center Text Overlay */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pr-[100px]">
-          <span className="text-3xl font-bold text-foreground">100%</span>
-          <span className="text-xs text-muted-foreground uppercase tracking-wider">Total</span>
+        {/* Center Text Overlay - Positioned manually for gauge effect */}
+        <div className="absolute bottom-[30%] left-0 right-0 flex flex-col items-center justify-center pointer-events-none">
+          <span className="text-4xl font-bold text-white tracking-tight">100K</span>
+          <span className="text-xs text-muted-foreground mt-1">Total</span>
         </div>
+      </div>
+
+      {/* Legend */}
+      <div className="flex justify-between px-4 mt-auto">
+         <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded bg-primary"></div>
+            <span className="text-xs text-muted-foreground">Profit</span>
+         </div>
+         <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded bg-[#404040]"></div>
+            <span className="text-xs text-muted-foreground">Loss</span>
+         </div>
+         <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded bg-[#262626]"></div>
+            <span className="text-xs text-muted-foreground">Return</span>
+         </div>
       </div>
     </div>
   );

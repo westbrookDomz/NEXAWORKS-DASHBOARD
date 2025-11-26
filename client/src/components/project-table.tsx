@@ -1,156 +1,107 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { CreditCard, Banknote, CalendarClock, CheckCircle2, AlertCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Search, SlidersHorizontal } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
-// Updated data structure based on user request
 const transactions = [
   { 
-    date: "2024-11-24", 
-    client: "TechStart Inc.", 
-    project: "Brand Identity", 
-    invoice: "INV-2024-001", 
-    charged: "$5,000.00", 
-    discount: "$0.00", 
-    agreed: "$5,000.00", 
-    paid: "$2,500.00", 
-    balance: "$2,500.00", 
-    total: "$5,000.00", 
-    paymentDate: "2024-11-24", 
-    status: "Partial", 
-    method: "Bank Transfer", 
-    notes: "50% deposit received" 
+    id: "#656758",
+    date: "2 May 2025", 
+    client: "Amanda Beier V", 
+    category: "Shoes, Shirt", 
+    status: "Pending", 
+    items: "2 Items",
+    total: "$264.77"
   },
   { 
-    date: "2024-11-20", 
-    client: "Global Ventures", 
-    project: "Web Design", 
-    invoice: "INV-2024-002", 
-    charged: "$8,500.00", 
-    discount: "$500.00", 
-    agreed: "$8,000.00", 
-    paid: "$8,000.00", 
-    balance: "$0.00", 
-    total: "$8,000.00", 
-    paymentDate: "2024-11-22", 
-    status: "Paid", 
-    method: "Credit Card", 
-    notes: "Paid in full" 
+    id: "#656759",
+    date: "Order ID", 
+    client: "Order ID", 
+    category: "Shoes, Shirt", 
+    status: "Completed", 
+    items: "3 Items",
+    total: "$284.77"
   },
   { 
-    date: "2024-11-15", 
-    client: "Acme Corp", 
-    project: "Marketing Assets", 
-    invoice: "INV-2024-003", 
-    charged: "$3,200.00", 
-    discount: "$0.00", 
-    agreed: "$3,200.00", 
-    paid: "$0.00", 
-    balance: "$3,200.00", 
-    total: "$3,200.00", 
-    paymentDate: "-", 
-    status: "Unpaid", 
-    method: "-", 
-    notes: "Invoice sent" 
-  },
-  { 
-    date: "2024-11-10", 
-    client: "Neon Cafe", 
-    project: "Social Media Kit", 
-    invoice: "INV-2024-004", 
-    charged: "$1,500.00", 
-    discount: "$100.00", 
-    agreed: "$1,400.00", 
-    paid: "$1,400.00", 
-    balance: "$0.00", 
-    total: "$1,400.00", 
-    paymentDate: "2024-11-12", 
-    status: "Paid", 
-    method: "PayPal", 
-    notes: "Early bird discount applied" 
-  },
-  { 
-    date: "2024-11-05", 
-    client: "Elevate Co.", 
-    project: "App UI/UX", 
-    invoice: "INV-2024-005", 
-    charged: "$12,000.00", 
-    discount: "$0.00", 
-    agreed: "$12,000.00", 
-    paid: "$4,000.00", 
-    balance: "$8,000.00", 
-    total: "$12,000.00", 
-    paymentDate: "2024-11-05", 
-    status: "Partial", 
-    method: "Bank Transfer", 
-    notes: "Milestone 1 paid" 
+    id: "#656760",
+    date: "Order ID", 
+    client: "Order ID", 
+    category: "Shoes, Shirt", 
+    status: "Completed", 
+    items: "3 Items",
+    total: "$284.77"
   },
 ];
 
-export default function ClientTable() {
+export default function ProjectTable() {
   return (
-    <div className="w-full overflow-hidden rounded-xl border border-border/40 bg-card/30 backdrop-blur-sm">
-      <div className="p-4 border-b border-border/40 flex justify-between items-center">
-        <h3 className="font-semibold text-lg text-foreground">Recent Transactions</h3>
-        <div className="flex gap-2">
-           <Badge variant="outline" className="bg-primary/5 text-primary hover:bg-primary/10 cursor-pointer transition-colors border-primary/20">
-             Export CSV
-           </Badge>
-        </div>
+    <div className="w-full bg-card rounded-[2rem] p-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+         <h3 className="text-lg font-bold text-white">Recent Orders</h3>
+         
+         <div className="flex items-center gap-3">
+            <div className="relative w-64">
+               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+               <Input 
+                 placeholder="Search..." 
+                 className="pl-10 bg-background border-none h-10 rounded-xl text-sm"
+               />
+               <div className="absolute right-3 top-1/2 -translate-y-1/2 p-1 bg-white/10 rounded">
+                  <Search className="w-3 h-3 text-white" />
+               </div>
+            </div>
+            
+            <div className="flex items-center gap-2 px-4 py-2.5 bg-background rounded-xl text-sm text-muted-foreground cursor-pointer hover:text-white border border-white/5">
+               <SlidersHorizontal className="w-4 h-4" />
+               Sort by
+            </div>
+         </div>
       </div>
+      
       <div className="overflow-x-auto">
-        <Table>
-          <TableHeader className="bg-muted/30">
-            <TableRow className="border-none hover:bg-transparent">
-              <TableHead className="whitespace-nowrap text-xs uppercase tracking-wider font-medium text-muted-foreground pl-4">Date</TableHead>
-              <TableHead className="whitespace-nowrap text-xs uppercase tracking-wider font-medium text-muted-foreground">Client Name</TableHead>
-              <TableHead className="whitespace-nowrap text-xs uppercase tracking-wider font-medium text-muted-foreground">Project</TableHead>
-              <TableHead className="whitespace-nowrap text-xs uppercase tracking-wider font-medium text-muted-foreground">Invoice No.</TableHead>
-              <TableHead className="whitespace-nowrap text-xs uppercase tracking-wider font-medium text-muted-foreground text-right">Agreed</TableHead>
-              <TableHead className="whitespace-nowrap text-xs uppercase tracking-wider font-medium text-muted-foreground text-right">Paid</TableHead>
-              <TableHead className="whitespace-nowrap text-xs uppercase tracking-wider font-medium text-muted-foreground text-right">Balance</TableHead>
-              <TableHead className="whitespace-nowrap text-xs uppercase tracking-wider font-medium text-muted-foreground text-center">Status</TableHead>
-              <TableHead className="whitespace-nowrap text-xs uppercase tracking-wider font-medium text-muted-foreground">Method</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {transactions.map((t, i) => (
-              <TableRow key={i} className="border-border/30 hover:bg-white/5 transition-colors group">
-                <TableCell className="font-mono text-xs text-muted-foreground pl-4 py-4 whitespace-nowrap">{t.date}</TableCell>
-                <TableCell className="font-medium text-foreground whitespace-nowrap">{t.client}</TableCell>
-                <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{t.project}</TableCell>
-                <TableCell className="font-mono text-xs text-primary whitespace-nowrap">{t.invoice}</TableCell>
-                <TableCell className="text-right font-mono text-xs font-medium whitespace-nowrap">{t.agreed}</TableCell>
-                <TableCell className="text-right font-mono text-xs text-muted-foreground whitespace-nowrap">{t.paid}</TableCell>
-                <TableCell className={cn(
-                  "text-right font-mono text-xs font-medium whitespace-nowrap",
-                  t.balance === "$0.00" ? "text-muted-foreground" : "text-orange-400"
-                )}>
-                  {t.balance}
-                </TableCell>
-                <TableCell className="text-center whitespace-nowrap">
-                  <Badge 
-                    variant="outline" 
-                    className={cn(
-                      "text-[10px] px-2 py-0.5 h-5 min-w-[70px] justify-center border-none",
-                      t.status === "Paid" ? "bg-emerald-500/10 text-emerald-400" : 
-                      t.status === "Partial" ? "bg-blue-500/10 text-blue-400" : 
-                      "bg-red-500/10 text-red-400"
-                    )}
-                  >
-                    {t.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-xs text-muted-foreground whitespace-nowrap flex items-center gap-1.5">
-                   {t.method !== "-" && (
-                     t.method.includes("Card") ? <CreditCard className="w-3 h-3" /> : <Banknote className="w-3 h-3" />
-                   )}
-                   {t.method}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <table className="w-full text-left border-separate border-spacing-y-4">
+          <thead>
+            <tr className="text-xs text-muted-foreground">
+               <th className="pb-2 pl-4 font-medium flex items-center gap-2">
+                  <div className="flex flex-col gap-0.5">
+                     <div className="w-2 h-1 bg-white/20 rounded-sm"></div>
+                     <div className="w-2 h-1 bg-white/20 rounded-sm"></div>
+                  </div>
+                  Order ID
+               </th>
+               <th className="pb-2 font-medium">Date</th>
+               <th className="pb-2 font-medium">Customer</th>
+               <th className="pb-2 font-medium">Category</th>
+               <th className="pb-2 font-medium">States</th>
+               <th className="pb-2 font-medium">Item</th>
+               <th className="pb-2 pr-4 font-medium text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+             {transactions.map((t, i) => (
+               <tr key={i} className="group">
+                  <td className="py-4 pl-4 bg-background/50 first:rounded-l-2xl group-hover:bg-background transition-colors">
+                     <div className="flex items-center gap-3">
+                        <div className="w-4 h-4 rounded border border-white/20"></div>
+                        <span className="text-sm font-medium text-muted-foreground">{t.id}</span>
+                     </div>
+                  </td>
+                  <td className="py-4 bg-background/50 group-hover:bg-background transition-colors text-sm text-white font-medium">{t.date}</td>
+                  <td className="py-4 bg-background/50 group-hover:bg-background transition-colors text-sm text-white font-medium">{t.client}</td>
+                  <td className="py-4 bg-background/50 group-hover:bg-background transition-colors text-sm text-white font-medium">{t.category}</td>
+                  <td className="py-4 bg-background/50 group-hover:bg-background transition-colors">
+                     <span className={`text-xs font-bold px-3 py-1.5 rounded-lg border ${
+                        t.status === 'Pending' 
+                           ? 'text-red-400 border-red-500/20 bg-red-500/10' 
+                           : 'text-green-400 border-green-500/20 bg-green-500/10'
+                     }`}>
+                        {t.status}
+                     </span>
+                  </td>
+                  <td className="py-4 bg-background/50 group-hover:bg-background transition-colors text-sm text-white font-medium">{t.items}</td>
+                  <td className="py-4 pr-4 bg-background/50 last:rounded-r-2xl group-hover:bg-background transition-colors text-sm text-white font-bold text-right">{t.total}</td>
+               </tr>
+             ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

@@ -6,169 +6,172 @@ import {
   FolderKanban, 
   Settings, 
   Search, 
-  User, 
-  Moon, 
   Bell, 
-  ChevronDown,
-  MapPin,
   Briefcase,
-  Circle,
-  CheckCircle2,
-  Star,
-  Maximize2,
-  Users
+  LogOut,
+  HelpCircle,
+  MessageSquare,
+  ShoppingBag,
+  Users,
+  Percent
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-
 import profileImage from "@assets/generated_images/professional_creative_director_headshot.png";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
 
+  const menuItems = [
+    { icon: LayoutGrid, label: "Dashboard", href: "/", active: true },
+    { icon: ShoppingBag, label: "Orders", href: "/orders", badge: "12" },
+    { icon: BarChart3, label: "Insights", href: "/insights" },
+    { icon: FolderKanban, label: "Updates", href: "/updates" },
+  ];
+
+  const productItems = [
+    { icon: Briefcase, label: "Store", href: "/store", badge: "50+" },
+    { icon: Percent, label: "Discount", href: "/discount" },
+    { icon: Users, label: "Customers", href: "/customers" },
+    { icon: MessageSquare, label: "Feedback", href: "/feedback" },
+  ];
+
   return (
     <div className="min-h-screen bg-background text-foreground flex font-sans overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-72 bg-background border-r border-border/40 hidden md:flex flex-col h-screen overflow-y-auto scrollbar-none">
-        <div className="p-6 flex items-center gap-3">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-background font-bold text-xl">
-            N
+      <aside className="w-72 bg-background hidden md:flex flex-col h-screen overflow-y-auto scrollbar-none p-6 border-r border-border/0">
+        <div className="flex items-center gap-3 mb-10 px-2">
+          <div className="w-8 h-8 text-primary animate-pulse-slow">
+             {/* Simple Star/Spark Icon similar to reference */}
+             <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+               <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
+             </svg>
           </div>
-          <span className="font-bold text-lg tracking-tight">Nexaworks</span>
+          <span className="font-bold text-xl tracking-tight text-white">Nexaworks</span>
         </div>
 
-        <div className="px-6 mb-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search projects..." 
-              className="pl-9 bg-card border-none h-10 text-sm rounded-xl focus-visible:ring-1 focus-visible:ring-primary/50"
-            />
-          </div>
-        </div>
-
-        <div className="flex-1 px-4 space-y-8">
-          {/* Filter Section */}
+        <div className="space-y-8 flex-1">
+          {/* Menu Section */}
           <div>
-            <h3 className="px-2 text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Filter</h3>
-            <div className="space-y-1">
-              <Button variant="ghost" className="w-full justify-between text-muted-foreground hover:text-foreground hover:bg-card rounded-xl h-10 px-3">
-                <span className="flex items-center gap-3">
-                  <FolderKanban className="w-4 h-4" />
-                  Unpaid Invoices
-                </span>
-                <ChevronDown className="w-4 h-4 opacity-50" />
-              </Button>
-              <Button variant="ghost" className="w-full justify-between text-muted-foreground hover:text-foreground hover:bg-card rounded-xl h-10 px-3">
-                <span className="flex items-center gap-3">
-                  <Briefcase className="w-4 h-4" />
-                  Client Tag
-                </span>
-                <ChevronDown className="w-4 h-4 opacity-50" />
-              </Button>
-            </div>
+            <h3 className="px-2 text-xs font-medium text-muted-foreground mb-4">Menu</h3>
+            <nav className="space-y-2">
+              {menuItems.map((item) => (
+                <Link key={item.label} href={item.href}>
+                  <div className={cn(
+                    "flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer",
+                    item.active 
+                      ? "bg-primary text-primary-foreground shadow-[0_0_20px_rgba(233,249,54,0.3)]" 
+                      : "text-muted-foreground hover:text-white hover:bg-white/5"
+                  )}>
+                    <div className="flex items-center gap-3">
+                      <item.icon className="w-5 h-5" />
+                      {item.label}
+                    </div>
+                    {item.badge && (
+                      <span className={cn(
+                        "text-xs px-1.5 py-0.5 rounded",
+                        item.active ? "bg-black/10 text-black" : "bg-white/10 text-white"
+                      )}>{item.badge}</span>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </nav>
           </div>
 
-          {/* Timeframe Section */}
+          {/* Products Section */}
           <div>
-            <h3 className="px-2 text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Timeframe</h3>
-            <RadioGroup defaultValue="month" className="space-y-1">
-              <div className="flex items-center space-x-3 px-3 py-2 rounded-xl hover:bg-card cursor-pointer group">
-                <RadioGroupItem value="month" id="month" className="border-muted-foreground text-primary" />
-                <Label htmlFor="month" className="text-sm font-medium text-foreground cursor-pointer flex-1">This Month</Label>
-              </div>
-              <div className="flex items-center space-x-3 px-3 py-2 rounded-xl hover:bg-card cursor-pointer group">
-                <RadioGroupItem value="year" id="year" className="border-muted-foreground text-primary" />
-                <Label htmlFor="year" className="text-sm font-medium text-muted-foreground group-hover:text-foreground cursor-pointer flex-1">This Year</Label>
-              </div>
-            </RadioGroup>
+            <h3 className="px-2 text-xs font-medium text-muted-foreground mb-4">Products</h3>
+            <nav className="space-y-2">
+              {productItems.map((item) => (
+                <Link key={item.label} href={item.href}>
+                  <div className="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:text-white hover:bg-white/5 transition-all cursor-pointer">
+                    <div className="flex items-center gap-3">
+                      <item.icon className="w-5 h-5" />
+                      {item.label}
+                    </div>
+                    {item.badge && (
+                      <span className="text-xs bg-white text-black px-1.5 py-0.5 rounded font-bold">{item.badge}</span>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </nav>
           </div>
 
-          {/* Status Section */}
+           {/* General Section */}
            <div>
-            <h3 className="px-2 text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Status</h3>
-            <RadioGroup defaultValue="all" className="space-y-1">
-              <div className="flex items-center space-x-3 px-3 py-2 rounded-xl hover:bg-card cursor-pointer group">
-                <RadioGroupItem value="all" id="all" className="border-muted-foreground text-primary" />
-                <Label htmlFor="all" className="text-sm font-medium text-foreground cursor-pointer flex-1">All</Label>
-              </div>
-              <div className="flex items-center space-x-3 px-3 py-2 rounded-xl hover:bg-card cursor-pointer group">
-                <RadioGroupItem value="pending" id="pending" className="border-muted-foreground text-primary" />
-                <Label htmlFor="pending" className="text-sm font-medium text-muted-foreground group-hover:text-foreground cursor-pointer flex-1">Pending Payment</Label>
-              </div>
-               <div className="flex items-center space-x-3 px-3 py-2 rounded-xl hover:bg-card cursor-pointer group">
-                <RadioGroupItem value="completed" id="completed" className="border-muted-foreground text-primary" />
-                <Label htmlFor="completed" className="text-sm font-medium text-muted-foreground group-hover:text-foreground cursor-pointer flex-1">Completed</Label>
-              </div>
-            </RadioGroup>
+            <h3 className="px-2 text-xs font-medium text-muted-foreground mb-4">General</h3>
+            <nav className="space-y-2">
+                <div className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:text-white hover:bg-white/5 cursor-pointer">
+                  <Settings className="w-5 h-5" />
+                  Settings
+                </div>
+                <div className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:text-white hover:bg-white/5 cursor-pointer">
+                  <HelpCircle className="w-5 h-5" />
+                  Help Desk
+                </div>
+            </nav>
           </div>
         </div>
 
-        {/* CTA Card */}
-        <div className="p-4 mt-4">
-          <div className="bg-gradient-to-br from-primary/80 to-primary p-5 rounded-2xl text-primary-foreground relative overflow-hidden">
-             {/* Decorative circles */}
-             <div className="absolute -top-6 -right-6 w-20 h-20 bg-white/20 rounded-full blur-xl"></div>
-             <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/10 to-transparent"></div>
-
-             <div className="relative z-10">
-               <div className="w-8 h-8 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mb-3">
-                 <div className="w-4 h-4 text-white">⚡</div>
-               </div>
-               <h4 className="font-semibold text-sm leading-tight mb-1">Generate Invoice</h4>
-               <p className="text-xs text-primary-foreground/80 mb-4 leading-relaxed">Create a new invoice quickly</p>
-               
-               <Button variant="secondary" size="sm" className="w-full bg-white/20 hover:bg-white/30 text-white border-none justify-between group">
-                 Create Now
-                 <span className="group-hover:translate-x-1 transition-transform">→</span>
-               </Button>
-             </div>
-          </div>
+        <div className="mt-auto pt-6">
+          <Button variant="outline" className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-500/10 border-none bg-white/5 h-12 rounded-xl">
+            <LogOut className="w-5 h-5 mr-3" />
+            Log out
+          </Button>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-h-screen bg-background overflow-hidden">
+      <main className="flex-1 flex flex-col min-h-screen bg-background overflow-hidden relative">
+        {/* Background Texture */}
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none z-0"></div>
+
         {/* Header */}
-        <header className="h-20 px-8 border-b border-border/40 flex items-center justify-between shrink-0">
-           <div className="flex items-center gap-8">
-              <h1 className="text-xl font-medium">Financial Overview</h1>
-              
-              <div className="flex items-center gap-3">
-                 <div className="px-3 py-1.5 rounded-lg bg-card border border-border/50 text-sm text-muted-foreground">
-                   Admin
-                 </div>
-                 <div className="flex items-center gap-2 text-sm font-medium">
-                   Dominion
-                 </div>
-              </div>
+        <header className="h-24 px-8 flex items-center justify-between shrink-0 relative z-10">
+           <div className="flex-1 max-w-md">
+             <div className="relative">
+               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+               <Input 
+                 placeholder="Search product" 
+                 className="pl-12 bg-card border-none h-12 rounded-2xl text-sm focus-visible:ring-1 focus-visible:ring-primary/50 placeholder:text-muted-foreground/50"
+               />
+               <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-1 text-xs text-muted-foreground">
+                  <span className="border border-white/10 px-1.5 rounded bg-white/5">K</span>
+                  <span className="border border-white/10 px-1.5 rounded bg-white/5">⌘</span>
+               </div>
+             </div>
            </div>
 
            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-                <Star className="w-5 h-5" />
+              <Button variant="ghost" size="icon" className="w-12 h-12 rounded-2xl bg-card text-muted-foreground hover:text-white border border-white/5">
+                <HelpCircle className="w-5 h-5" />
               </Button>
-              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-                <Maximize2 className="w-5 h-5" />
-              </Button>
-              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+              <Button variant="ghost" size="icon" className="w-12 h-12 rounded-2xl bg-card text-muted-foreground hover:text-white border border-white/5 relative">
                 <Bell className="w-5 h-5" />
+                <span className="absolute top-3 right-3 w-2 h-2 bg-red-500 rounded-full"></span>
               </Button>
-              <div className="h-8 w-px bg-border mx-1"></div>
-              <Avatar className="w-10 h-10 border border-border cursor-pointer">
-                <AvatarImage src={profileImage} alt="Dominion" />
-                <AvatarFallback>D</AvatarFallback>
-              </Avatar>
+              
+              <div className="flex items-center gap-3 pl-2">
+                 <div className="text-right hidden md:block">
+                    <p className="text-sm font-bold text-white leading-none mb-1">Dominion</p>
+                    <p className="text-xs text-muted-foreground">Admin</p>
+                 </div>
+                 <div className="p-1 rounded-2xl border border-white/10 bg-card">
+                    <Avatar className="w-10 h-10 rounded-xl cursor-pointer">
+                      <AvatarImage src={profileImage} alt="Dominion" />
+                      <AvatarFallback className="rounded-xl bg-primary text-primary-foreground font-bold">D</AvatarFallback>
+                    </Avatar>
+                 </div>
+              </div>
            </div>
         </header>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-auto p-8 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-border">
+        <div className="flex-1 overflow-auto p-8 pt-0 relative z-10 scrollbar-none">
           {children}
         </div>
       </main>
