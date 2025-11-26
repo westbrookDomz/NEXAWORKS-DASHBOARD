@@ -14,7 +14,7 @@ const barData = [
 
 // Gauge Chart Data
 const gaugeData = [
-  { name: "Profit", value: 70, color: "hsl(var(--primary))" }, // Yellow
+  { name: "Profit", value: 70, color: "var(--color-primary)" }, // Yellow
   { name: "Loss", value: 20, color: "hsl(0, 0%, 25%)" },      // Dark Gray
   { name: "Return", value: 10, color: "hsl(0, 0%, 15%)" },     // Darker Gray
 ];
@@ -68,7 +68,7 @@ export default function AnalyticsCard() {
                 {barData.map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`} 
-                    fill={entry.name === 'Mon' ? 'hsl(var(--primary))' : 'url(#stripePattern)'}
+                    fill={entry.name === 'Mon' ? 'var(--color-primary)' : 'url(#stripePattern)'}
                     stroke={entry.name === 'Mon' ? 'none' : 'hsl(0, 0%, 30%)'}
                     strokeWidth={1}
                   />
@@ -78,9 +78,6 @@ export default function AnalyticsCard() {
           </ResponsiveContainer>
         </div>
       </div>
-
-      {/* Divider for large screens */}
-      <div className="hidden lg:block w-px bg-white/5 h-full mx-auto absolute left-[66%] top-0 bottom-0"></div>
 
       {/* Right Side: Total Income */}
       <div className="lg:col-span-4 flex flex-col h-[350px] relative">
