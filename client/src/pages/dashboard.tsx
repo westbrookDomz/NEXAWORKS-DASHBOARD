@@ -1,7 +1,7 @@
 import DashboardLayout from "@/components/dashboard-layout";
 import StatsCard from "@/components/stats-card";
 import RevenueChart from "@/components/revenue-chart";
-import OverviewBreakdown from "@/components/overview-breakdown";
+import DistributionChart from "@/components/distribution-chart";
 import ProjectTable from "@/components/project-table";
 import TopFranchiseCard from "@/components/top-franchise-card";
 
@@ -48,14 +48,12 @@ export default function Dashboard() {
 
         {/* Middle Section: Overview Breakdown & Chart */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left: Breakdown List - Reusing component but conceptually mapped to project types */}
-          <div className="lg:col-span-4 space-y-6">
-             <h3 className="text-lg font-medium text-muted-foreground">Revenue by Service</h3>
-             {/* Note: In a real app, we'd pass props to customize this, but for prototype we'll use the existing structure */}
-             <OverviewBreakdown />
+          {/* Left: Distribution Chart */}
+          <div className="lg:col-span-4">
+             <DistributionChart />
           </div>
 
-          {/* Right: Chart */}
+          {/* Right: Revenue Chart */}
           <div className="lg:col-span-8 h-[420px] border border-white/5 rounded-2xl p-6 bg-card/30 relative">
              <RevenueChart />
           </div>
