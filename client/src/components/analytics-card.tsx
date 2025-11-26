@@ -29,7 +29,7 @@ export default function AnalyticsCard() {
            <div>
               <h3 className="text-lg font-bold text-white mb-1">Revenue analytics</h3>
               {/* Using D for Dalasi */}
-              <div className="text-3xl font-bold text-white bg-white/10 px-3 py-1 rounded-lg inline-block">D33,500</div>
+              <div className="text-3xl font-bold text-white inline-block">D33,500</div>
            </div>
            <div className="px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-xs text-muted-foreground font-medium cursor-pointer hover:text-white transition-colors">
               This week v
