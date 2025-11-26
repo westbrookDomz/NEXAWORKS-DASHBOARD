@@ -41,10 +41,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen bg-background text-foreground flex font-sans overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-72 bg-background hidden md:flex flex-col h-screen overflow-y-auto scrollbar-none p-6 border-r border-border/0">
-        <div className="flex items-center gap-3 mb-10 px-2">
+      <aside className="w-72 bg-background hidden md:flex flex-col h-screen border-r border-border/0 relative z-20">
+        {/* Fixed Header */}
+        <div className="p-6 flex items-center gap-3 mb-2">
           <div className="w-8 h-8 text-primary animate-pulse-slow">
-             {/* Simple Star/Spark Icon similar to reference */}
              <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
                <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
              </svg>
@@ -52,7 +52,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <span className="font-bold text-xl tracking-tight text-white">Nexaworks</span>
         </div>
 
-        <div className="space-y-8 flex-1">
+        {/* Scrollable Navigation Area */}
+        <div className="flex-1 overflow-y-auto scrollbar-none px-6 space-y-8">
           {/* Menu Section */}
           <div>
             <h3 className="px-2 text-xs font-medium text-muted-foreground mb-4">Menu</h3>
@@ -117,7 +118,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
 
-        <div className="mt-auto pt-6">
+        {/* Fixed Footer / Logout */}
+        <div className="p-6 mt-auto bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <Button variant="outline" className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-500/10 border-none bg-white/5 h-12 rounded-xl">
             <LogOut className="w-5 h-5 mr-3" />
             Log out

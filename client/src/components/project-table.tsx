@@ -1,5 +1,6 @@
 import { Search, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 const transactions = [
   { 
@@ -9,25 +10,43 @@ const transactions = [
     category: "Shoes, Shirt", 
     status: "Pending", 
     items: "2 Items",
-    total: "$264.77"
+    total: "D264.77"
   },
   { 
     id: "#656759",
-    date: "Order ID", 
-    client: "Order ID", 
+    date: "2 May 2025", 
+    client: "Jone Doe", 
     category: "Shoes, Shirt", 
     status: "Completed", 
     items: "3 Items",
-    total: "$284.77"
+    total: "D284.77"
   },
   { 
     id: "#656760",
-    date: "Order ID", 
-    client: "Order ID", 
+    date: "3 May 2025", 
+    client: "Mike Smith", 
     category: "Shoes, Shirt", 
     status: "Completed", 
     items: "3 Items",
-    total: "$284.77"
+    total: "D284.77"
+  },
+  { 
+    id: "#656761",
+    date: "4 May 2025", 
+    client: "Sarah Johnson", 
+    category: "Shoes, Shirt", 
+    status: "Pending", 
+    items: "1 Item",
+    total: "D124.50"
+  },
+  { 
+    id: "#656762",
+    date: "5 May 2025", 
+    client: "Tom Wilson", 
+    category: "Shoes, Shirt", 
+    status: "Completed", 
+    items: "5 Items",
+    total: "D584.20"
   },
 ];
 
@@ -80,7 +99,9 @@ export default function ProjectTable() {
                <tr key={i} className="group">
                   <td className="py-4 pl-4 bg-background/50 first:rounded-l-2xl group-hover:bg-background transition-colors">
                      <div className="flex items-center gap-3">
-                        <div className="w-4 h-4 rounded border border-white/20"></div>
+                        <div className="w-4 h-4 rounded border border-white/20 flex items-center justify-center">
+                           <div className="w-2 h-2 rounded-[2px] bg-transparent group-hover:bg-primary transition-colors"></div>
+                        </div>
                         <span className="text-sm font-medium text-muted-foreground">{t.id}</span>
                      </div>
                   </td>
@@ -88,11 +109,11 @@ export default function ProjectTable() {
                   <td className="py-4 bg-background/50 group-hover:bg-background transition-colors text-sm text-white font-medium">{t.client}</td>
                   <td className="py-4 bg-background/50 group-hover:bg-background transition-colors text-sm text-white font-medium">{t.category}</td>
                   <td className="py-4 bg-background/50 group-hover:bg-background transition-colors">
-                     <span className={`text-xs font-bold px-3 py-1.5 rounded-lg border ${
+                     <span className={cn("text-xs font-bold px-3 py-1.5 rounded-lg border",
                         t.status === 'Pending' 
                            ? 'text-red-400 border-red-500/20 bg-red-500/10' 
                            : 'text-green-400 border-green-500/20 bg-green-500/10'
-                     }`}>
+                     )}>
                         {t.status}
                      </span>
                   </td>

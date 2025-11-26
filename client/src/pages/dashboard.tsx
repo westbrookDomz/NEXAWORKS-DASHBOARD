@@ -1,7 +1,6 @@
 import DashboardLayout from "@/components/dashboard-layout";
 import StatsCard from "@/components/stats-card";
-import RevenueChart from "@/components/revenue-chart";
-import DistributionChart from "@/components/distribution-chart";
+import AnalyticsCard from "@/components/analytics-card";
 import ProjectTable from "@/components/project-table";
 import { ShoppingCart, UserPlus, Box, DollarSign, Calendar } from "lucide-react";
 
@@ -46,25 +45,17 @@ export default function Dashboard() {
           />
           <StatsCard 
             title="Total Sales" 
-            value="$45,500" 
+            value="D45,500" 
             variance="4.9%" 
             trend="up"
-            subtext="Last month: $13,576"
+            subtext="Last month: D13,576"
             icon={<DollarSign className="w-5 h-5" />}
           />
         </div>
 
-        {/* Middle Section: Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-[400px]">
-          {/* Left: Bar Chart */}
-          <div className="lg:col-span-8 h-full">
-             <RevenueChart />
-          </div>
-
-          {/* Right: Gauge Chart */}
-          <div className="lg:col-span-4 h-full">
-             <DistributionChart />
-          </div>
+        {/* Middle Section: Combined Analytics Card */}
+        <div>
+           <AnalyticsCard />
         </div>
 
         {/* Bottom Section: Table */}

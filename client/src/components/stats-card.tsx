@@ -16,7 +16,7 @@ export default function StatsCard({
   value, 
   variance, 
   trend = "up", 
-  subtext = "Last month: $13,576",
+  subtext = "Last month: D13,576",
   icon
 }: StatsCardProps) {
   
