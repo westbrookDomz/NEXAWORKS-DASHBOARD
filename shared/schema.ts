@@ -16,3 +16,28 @@ export const insertUserSchema = createInsertSchema(users).pick({
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+
+export const payments = pgTable("payments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  date: text("date").notNull(),
+  clientName: text("client_name").notNull(),
+  projectTitle: text("project_title").notNull(),
+  invoiceNo: text("invoice_no").notNull(),
+  amountCharged: text("amount_charged").notNull(),
+  discount: text("discount").notNull(),
+  agreedAmount: text("agreed_amount").notNull(),
+  amountPaid: text("amount_paid").notNull(),
+  balance: text("balance").notNull(),
+  totalAmount: text("total_amount").notNull(),
+  paymentDate: text("payment_date"),
+  status: text("status").notNull(),
+  paymentMethod: text("payment_method"),
+  notes: text("notes"),
+});
+
+export const insertPaymentSchema = createInsertSchema(payments).omit({
+  id: true,
+});
+
+export type InsertPayment = z.infer<typeof insertPaymentSchema>;
+export type Payment = typeof payments.$inferSelect;

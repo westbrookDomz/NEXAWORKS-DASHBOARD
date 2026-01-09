@@ -9,8 +9,122 @@ export async function registerRoutes(
   // put application routes here
   // prefix all routes with /api
 
-  // use storage to perform CRUD operations on the storage interface
-  // e.g. storage.insertUser(user) or storage.getUserByUsername(username)
+  // Payment routes
+  app.get("/api/payments", async (_req, res) => {
+    // Try to sync from Google Sheets if configured
+    try {
+      const { googleSheetsService } = await import("./services/google-sheets");
+      const sheetId = process.env.GOOGLE_SHEET_ID;
+      
+      if (sheetId && process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+        console.log("Syncing with Google Sheets...");
+        const payments = await googleSheetsService.getPaymentData(sheetId);
+        
+        // Update local storage
+        await storage.clearPayments();
+        for (const payment of payments) {
+          await storage.createPayment(payment);
+        }
+        console.log(`Synced ${payments.length} records from Google Sheets`);
+      }
+    } catch (error) {
+      console.error("Google Sheets Sync Error:", error);
+      // Continue to return local data even if sync fails
+    }
+
+    const payments = await storage.getPayments();
+    res.json(payments);
+  });
+
+  app.post("/api/payments/upload", async (req, res) => {
+    try {
+      const { csvData } = req.body;
+      if (!csvData) {
+        return res.status(400).json({ message: "No CSV data provided" });
+      }
+
+      // Simple CSV parsing
+      const rows = csvData.split("\n");
+      const headers = rows[0].split(",").map((h: string) => h.trim());
+      
+      // Clear existing payments for this simple implementation
+      await storage.clearPayments();
+
+      let count = 0;
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row.trim()) continue;
+
+        // basic CSV split handling quotes
+        const matches = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
+        const values = matches.map((val: string) => 
+          val.replace(/^"|"$/g, '').trim()
+        ); // simple split, not robust specifically for all CSV edge cases but good for this file
+        
+        // Manual mapping based on known columns
+        // Date,Client Name,Project Title,Invoice No.,Amount Charged (D),Discount (D),AGREED Amount (D),Amount Paid (D),Balance (D),TOTAL AMOUNT,Payment Date ,Status,Payment Method,Notes
+        
+        // Only process if we have enough columns (approx 14)
+        if (values.length < 10) continue; 
+        
+        // This is a direct mapping to the specific file provided
+        // We know the index based on the file content viewed earlier
+        // 0: Date, 1: Client, 2: Project, 3: Invoice, 4: Amount(D), 5: Discount, 6: Agreed, 7: Paid, 8: Balance, 9: Total, 10: Date, 11: Status, 12: Method, 13: Notes
+
+        /* 
+           However, splitting by comma is fragile if values contain commas (e.g. "D9,500.00").
+           The user's CSV has amounts quoted like "D9,500.00".
+           We need a slightly better parser.
+        */
+        
+        const parseCSV = (line: string) => {
+          const result = [];
+          let current = '';
+          let inQuote = false;
+          for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"') {
+              inQuote = !inQuote;
+            } else if (char === ',' && !inQuote) {
+              result.push(current.trim());
+              current = '';
+            } else {
+              current += char;
+            }
+          }
+          result.push(current.trim());
+          return result;
+        };
+
+        const cols = parseCSV(row);
+        
+        if (cols.length < 10) continue;
+
+        await storage.createPayment({
+          date: cols[0],
+          clientName: cols[1],
+          projectTitle: cols[2],
+          invoiceNo: cols[3],
+          amountCharged: cols[4].replace(/^"?D|,|"?$/g, ''), // clean currency format
+          discount: cols[5].replace(/^"?D|,|"?$/g, ''),
+          agreedAmount: cols[6].replace(/^"?D|,|"?$/g, ''),
+          amountPaid: cols[7].replace(/^"?D|,|"?$/g, ''),
+          balance: cols[8].replace(/^"?D|,|"?$/g, ''),
+          totalAmount: cols[9].replace(/^"?D|,|"?$/g, ''),
+          paymentDate: cols[10] || null,
+          status: cols[11],
+          paymentMethod: cols[12] || null,
+          notes: cols[13] || null,
+        });
+        count++;
+      }
+
+      res.json({ message: `Successfully imported ${count} payments` });
+    } catch (error) {
+      console.error('CSV Upload Error:', error);
+      res.status(500).json({ message: "Failed to process CSV" });
+    }
+  });
 
   return httpServer;
 }
