@@ -2,7 +2,7 @@
 
 A professional, high-performance dashboard application designed for managing projects, invoices, and financial analytics. Built with a focus on modern aesthetics and responsiveness.
 
-## 🚀 Features
+## Features
 
 - **Sales Overview**: Real-time visualization of revenue, active clients, and outstanding balances with interactive charts.
 - **Project Management**: Track active and completed projects with progress indicators and budget monitoring.
@@ -14,6 +14,6 @@ A professional, high-performance dashboard application designed for managing pro
   - Glassmorphism effects and smooth transitions.
   - Custom gradient borders and premium visual details.
 
-## 📝 License
+## License
 
 This project is proprietary software for NEXAWORKS.
