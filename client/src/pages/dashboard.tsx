@@ -1,107 +1,156 @@
+import { useMemo } from "react";
+import { format } from "date-fns";
+import { Hourglass, Receipt, Users, Wallet } from "lucide-react";
 import StatsCard from "@/components/stats-card";
-import AnalyticsCard from "@/components/analytics-card";
-import { ShoppingCart, UserPlus, Box, DollarSign, Calendar } from "lucide-react";
+import BillingBars from "@/components/billing-bars";
+import CollectionGauge from "@/components/collection-gauge";
+import RecentBilling from "@/components/recent-billing";
+import TopClients from "@/components/top-clients";
+import { PageHeader } from "@/components/page-header";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useEntries } from "@/hooks/use-entries";
+import { useIntro } from "@/hooks/use-intro";
+import { change, formatMoney, monthlySeries, sum } from "@/lib/finance";
 
-import { useQuery } from "@tanstack/react-query";
-import { type Payment } from "@shared/schema";
-import { startOfMonth, endOfMonth, subMonths, isWithinInterval, parse } from "date-fns";
+const money = (n: number) => formatMoney(n);
+const count = (n: number) => n.toLocaleString("en-US");
 
 export default function Dashboard() {
-  const { data: payments } = useQuery<Payment[]>({
-    queryKey: ["/api/payments"],
-  });
+  const { entries, isLoading, isError, refetch } = useEntries();
+  const intro = useIntro("overview");
 
-  // Helper to parse "DD-MMM-YY" or standard dates
-  const parseDate = (dateStr: string) => {
-    const d = new Date(dateStr);
-    if (!isNaN(d.getTime())) return d;
-    return new Date(); // Fallback
-  };
+  const data = useMemo(() => {
+    const series = monthlySeries(entries, 6);
+    const latest = series[series.length - 1];
+    const prev = series[series.length - 2];
+    const spark = (key: "invoiced" | "collected" | "outstanding" | "clients") =>
+      series.map((m) => ({ label: m.key, value: m[key] }));
+    const firstDated = entries.map((e) => e.issued).filter(Boolean).sort((a, b) => a!.getTime() - b!.getTime())[0];
 
-  const now = new Date();
-  const currentMonthStart = startOfMonth(now);
-  const currentMonthEnd = endOfMonth(now);
-  const lastMonthStart = startOfMonth(subMonths(now, 1));
-  const lastMonthEnd = endOfMonth(subMonths(now, 1));
+    return {
+      series,
+      latest,
+      prev,
+      spark,
+      latestLabel: latest ? format(latest.date, "MMM yyyy") : "",
+      latestShort: latest ? format(latest.date, "MMM") : "",
+      span: firstDated && latest ? `${format(firstDated, "MMM")} to ${format(latest.date, "MMM yyyy")}` : null,
+      billed: sum(entries, "total"),
+      collected: sum(entries, "paid"),
+      outstanding: sum(entries, "balance"),
+      clients: new Set(entries.map((e) => e.client)).size,
+      overdue: entries.filter((e) => e.state === "Overdue").length,
+    };
+  }, [entries]);
 
-  const filterByDateRange = (items: Payment[] = [], start: Date, end: Date) => {
-    return items.filter(p => {
-      const date = parseDate(p.date);
-      return isWithinInterval(date, { start, end });
-    });
-  };
+  if (isError) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Overview" />
+        <div className="panel flex flex-col items-start gap-4 p-6">
+          <div>
+            <h2 className="text-lg">Couldn't load the payments sheet</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Check the sheet connection in .env, then try again.</p>
+          </div>
+          <Button onClick={() => refetch()}>Try again</Button>
+        </div>
+      </div>
+    );
+  }
 
-  const currentMonthPayments = filterByDateRange(payments, currentMonthStart, currentMonthEnd);
-  const lastMonthPayments = filterByDateRange(payments, lastMonthStart, lastMonthEnd);
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Overview" description="Loading the payments sheet" />
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }, (_, i) => (
+            <Skeleton key={i} className="h-[164px] rounded-[var(--radius-panel)] bg-card" />
+          ))}
+        </div>
+        <div className="grid gap-3 xl:grid-cols-12">
+          <Skeleton className="h-[440px] rounded-[var(--radius-panel)] bg-card xl:col-span-8" />
+          <Skeleton className="h-[440px] rounded-[var(--radius-panel)] bg-card xl:col-span-4" />
+        </div>
+      </div>
+    );
+  }
 
-  const calculateMetrics = (items: Payment[]) => {
-    const revenue = items.reduce((acc, curr) => acc + (parseFloat(curr.totalAmount.replace(/[^0-9.-]+/g, "")) || 0), 0);
-    const collected = items.reduce((acc, curr) => acc + (parseFloat(curr.amountPaid.replace(/[^0-9.-]+/g, "")) || 0), 0);
-    const balance = items.reduce((acc, curr) => acc + (parseFloat(curr.balance.replace(/[^0-9.-]+/g, "")) || 0), 0);
-    const clients = new Set(items.map(p => p.clientName)).size;
-    return { revenue, collected, balance, clients };
-  };
-
-  const currentMetrics = calculateMetrics(currentMonthPayments);
-  const lastMetrics = calculateMetrics(lastMonthPayments);
-  const allTimeMetrics = calculateMetrics(payments || []);
-
-  const calculateVariance = (current: number, previous: number) => {
-    if (previous === 0) return current > 0 ? 100 : 0;
-    return ((current - previous) / previous) * 100;
-  };
-
-  const revenueVariance = calculateVariance(currentMetrics.revenue, lastMetrics.revenue);
-  const clientsVariance = calculateVariance(currentMetrics.clients, lastMetrics.clients);
-  const balanceVariance = calculateVariance(currentMetrics.balance, lastMetrics.balance);
-  const collectedVariance = calculateVariance(currentMetrics.collected, lastMetrics.collected);
-
-  const formatVariance = (val: number) => `${val > 0 ? "+" : ""}${val.toFixed(1)}%`;
+  const { latest, prev, latestLabel, latestShort } = data;
 
   return (
-    <div className="max-w-[1600px] mx-auto animate-in-fade flex flex-col gap-6 px-8 pb-8 pt-2">
-      
-      {/* Top Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatsCard 
-          title="Total Revenue" 
-          value={`D${allTimeMetrics.revenue.toLocaleString()}`}
-          variance={formatVariance(revenueVariance)}
-          trend={revenueVariance >= 0 ? "up" : "down"}
-          subtext="All time revenue"
-          icon={<DollarSign className="w-5 h-5" />}
-        />
-        <StatsCard 
-          title="Active Clients" 
-          value={allTimeMetrics.clients.toString()} 
-          variance={formatVariance(clientsVariance)}
-          trend={clientsVariance >= 0 ? "up" : "down"}
-          subtext="Unique customers"
-          icon={<UserPlus className="w-5 h-5" />}
-        />
-        <StatsCard 
-          title="Outstanding Balance" 
-          value={`D${allTimeMetrics.balance.toLocaleString()}`}
-          variance={formatVariance(balanceVariance)}
-          trend={balanceVariance >= 0 ? "up" : "down"}
-          subtext="Pending payments"
-          icon={<Box className="w-5 h-5" />}
-        />
-        <StatsCard 
-          title="Total Collected" 
-          value={`D${allTimeMetrics.collected.toLocaleString()}`}
-          variance={formatVariance(collectedVariance)}
-          trend={collectedVariance >= 0 ? "up" : "down"}
-          subtext="Cash in hand"
-          icon={<ShoppingCart className="w-5 h-5" />}
-        />
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Overview"
+        description={data.span ? `Studio billing from ${data.span}. Month changes compare ${latestLabel} with the month before.` : "No billing records yet."}
+      />
 
-      {/* Middle Section: Combined Analytics Card */}
-      <div>
-         <AnalyticsCard />
-      </div>
+      <div className="space-y-3">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <StatsCard
+            title="Total billed"
+            value={data.billed}
+            format={money}
+            icon={<Receipt />}
+            hue="primary"
+            delta={latest && prev ? change(latest.invoiced, prev.invoiced) : null}
+            note={latest ? `${formatMoney(latest.invoiced)} billed in ${latestShort}` : undefined}
+            spark={data.spark("invoiced")}
+            intro={intro}
+          />
+          <StatsCard
+            title="Clients"
+            value={data.clients}
+            format={count}
+            icon={<Users />}
+            hue="violet"
+            delta={latest && prev ? change(latest.clients, prev.clients) : null}
+            note={latest ? `${latest.clients} billed in ${latestShort}` : undefined}
+            spark={data.spark("clients")}
+            intro={intro}
+          />
+          <StatsCard
+            title="Outstanding"
+            value={data.outstanding}
+            format={money}
+            icon={<Hourglass />}
+            hue="amber"
+            goodWhen="down"
+            note={data.overdue ? `${data.overdue} ${data.overdue === 1 ? "invoice is" : "invoices are"} overdue` : "Nothing overdue"}
+            spark={data.spark("outstanding")}
+            intro={intro}
+          />
+          <StatsCard
+            title="Collected"
+            value={data.collected}
+            format={money}
+            icon={<Wallet />}
+            hue="mint"
+            delta={latest && prev ? change(latest.collected, prev.collected) : null}
+            note={latest ? `${formatMoney(latest.collected)} of ${latestShort} billing` : undefined}
+            spark={data.spark("collected")}
+            intro={intro}
+          />
+        </div>
 
+        <div className="grid gap-3 xl:grid-cols-12">
+          <div className="xl:col-span-8">
+            <BillingBars entries={entries} intro={intro} />
+          </div>
+          <div className="xl:col-span-4 [&>section]:h-full">
+            <CollectionGauge entries={entries} intro={intro} />
+          </div>
+        </div>
+
+        <div className="grid gap-3 xl:grid-cols-12">
+          <div className="min-w-0 xl:col-span-8">
+            <RecentBilling entries={entries} />
+          </div>
+          <div className="xl:col-span-4 [&>section]:h-full">
+            <TopClients entries={entries} intro={intro} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

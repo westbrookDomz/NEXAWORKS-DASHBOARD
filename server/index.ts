@@ -3,6 +3,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
+import { spawn } from "child_process";
 
 const app = express();
 const httpServer = createServer(app);
@@ -92,7 +93,12 @@ app.use((req, res, next) => {
       host: "0.0.0.0",
     },
     () => {
-      log(`serving on port ${port}`);
+      const url = `http://localhost:${port}`;
+      log(`serving on port ${port}. Open ${url}`);
+      // Set by the Conductor run script: open the app in the default browser once it's listening.
+      if (process.env.OPEN_BROWSER === "1" && process.platform === "darwin") {
+        spawn("open", [url], { stdio: "ignore", detached: true }).on("error", () => {}).unref();
+      }
     },
   );
 })();

@@ -1,16 +1,16 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { setupAuth, requireAuth } from "./auth";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // put application routes here
-  // prefix all routes with /api
+  setupAuth(app);
 
   // Payment routes
-  app.get("/api/payments", async (_req, res) => {
+  app.get("/api/payments", requireAuth, async (_req, res) => {
     // Try to sync from Google Sheets if configured
     try {
       const { googleSheetsService } = await import("./services/google-sheets");
@@ -36,7 +36,7 @@ export async function registerRoutes(
     res.json(payments);
   });
 
-  app.post("/api/payments/upload", async (req, res) => {
+  app.post("/api/payments/upload", requireAuth, async (req, res) => {
     try {
       const { csvData } = req.body;
       if (!csvData) {

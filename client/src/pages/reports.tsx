@@ -1,285 +1,206 @@
-import { Link } from "wouter";
 import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { type Payment } from "@shared/schema";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { format } from "date-fns";
+import { motion } from "framer-motion";
+import { Download } from "lucide-react";
+import { Area, ComposedChart, CartesianGrid, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer, 
-  AreaChart, 
-  Area,
-  PieChart, 
-  Pie, 
-  Cell
-} from "recharts";
-import { 
-  Search, 
-  Bell, 
-  HelpCircle, 
-  Download, 
-  Calendar as CalendarIcon,
-  TrendingUp, 
-  TrendingDown, 
-  DollarSign,
-  ArrowLeft
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useEntries } from "@/hooks/use-entries";
+import { useIntro } from "@/hooks/use-intro";
+import { downloadCsv } from "@/lib/csv";
+import { formatMoney, monthlySeries } from "@/lib/finance";
+import { easeOut } from "@/lib/motion";
 
-const COLORS = ['#179be5', '#8b5cf6', '#f97316', '#06b6d4', '#ec4899', '#eab308'];
+const axisTick = { fill: "#8a93a3", fontSize: 12 };
+const kLabel = (v: number) => (v >= 1000 ? `D${+(v / 1000).toFixed(1)}k` : `D${v}`);
 
 export default function Reports() {
-  const { data: payments, isLoading, refetch, isRefetching } = useQuery<Payment[]>({
-    queryKey: ["/api/payments"],
-  });
+  const { entries, isLoading } = useEntries();
+  const intro = useIntro("reports");
 
-  const stats = useMemo(() => {
-    if (!payments) return { 
-      revenue: 0, 
-      invoiced: 0, 
-      outstanding: 0, 
-      trendData: [], 
-      clientData: [] 
-    };
+  const months = useMemo(() => monthlySeries(entries, 12), [entries]);
+  const chart = months.map((m) => ({ name: m.label, full: format(m.date, "MMMM yyyy"), billed: m.invoiced, collected: m.collected }));
 
-    const revenue = payments.reduce((acc, p) => acc + (parseFloat(p.amountPaid.replace(/[^0-9.-]+/g, "")) || 0), 0);
-    const invoiced = payments.reduce((acc, p) => acc + (parseFloat(p.totalAmount.replace(/[^0-9.-]+/g, "")) || 0), 0);
-    const outstanding = payments.reduce((acc, p) => acc + (parseFloat(p.balance.replace(/[^0-9.-]+/g, "")) || 0), 0);
+  const clients = useMemo(() => {
+    const map = new Map<string, { name: string; billed: number; collected: number }>();
+    for (const e of entries) {
+      const c = map.get(e.client) ?? { name: e.client, billed: 0, collected: 0 };
+      c.billed += e.total;
+      c.collected += e.paid;
+      map.set(e.client, c);
+    }
+    return Array.from(map.values()).sort((a, b) => b.billed - a.billed);
+  }, [entries]);
+  const maxClient = clients[0]?.billed || 1;
 
-    // Process Trend Data (Group by Month)
-    const trendMap = new Map<string, number>();
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    
-    // Initialize current year months
-    const currentYear = new Date().getFullYear();
-    months.forEach(m => trendMap.set(`${m} ${currentYear}`, 0));
+  const exportMonths = () =>
+    downloadCsv(
+      "nexaworks-monthly-report.csv",
+      ["Month", "Billed", "Collected", "Outstanding"],
+      months.map((m) => [format(m.date, "MMM yyyy"), m.invoiced, m.collected, m.outstanding]),
+    );
 
-    payments.forEach(p => {
-        const date = new Date(p.date);
-        if (isNaN(date.getTime())) return;
-        const key = `${months[date.getMonth()]} ${date.getFullYear()}`;
-        // We track 'invoiced' amount for trend or 'collected'? Let's use 'collected' (amountPaid) for Revenue Trend
-        const amount = parseFloat(p.amountPaid.replace(/[^0-9.-]+/g, "")) || 0;
-        if (trendMap.has(key)) {
-            trendMap.set(key, (trendMap.get(key) || 0) + amount);
-        }
-    });
-
-    // Convert map to array and sort by date 
-    // Simplified: Just taking the predefined keys in order for this year to show a nice curve
-    const trendData = Array.from(trendMap.entries()).map(([name, value]) => ({ name: name.split(' ')[0], value }));
-
-    // Process Client Data (Group by Client for Pie Chart)
-    const clientMap = new Map<string, number>();
-    payments.forEach(p => {
-        const amount = parseFloat(p.amountPaid.replace(/[^0-9.-]+/g, "")) || 0;
-        if (amount > 0) {
-            clientMap.set(p.clientName, (clientMap.get(p.clientName) || 0) + amount);
-        }
-    });
-    
-    const clientData = Array.from(clientMap.entries())
-        .map(([name, value]) => ({ name, value }))
-        .sort((a, b) => b.value - a.value)
-        .slice(0, 5); // Top 5
-
-    return { revenue, invoiced, outstanding, trendData, clientData };
-  }, [payments]);
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Reports" />
+        <Skeleton className="h-[420px] rounded-[var(--radius-panel)] bg-card" />
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-7xl mx-auto px-6 lg:px-8 py-6 animate-in-fade space-y-6">
-      
-      {/* Header */}
-      <div className="flex flex-col gap-6">
-         {/* Top Bar matching other pages */}
-        <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-white">Reports</h1>
-        </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Reports"
+        description="Twelve months of billing and collection, ending with the latest month on the sheet."
+        actions={
+          <Button variant="outline" onClick={exportMonths} disabled={!months.length}>
+            <Download />
+            Export CSV
+          </Button>
+        }
+      />
 
-        {/* Action Bar */}
-       <div className="flex items-center justify-between">
-            <Button variant="outline" className="bg-card border-white/10 text-white hover:bg-white/5 gap-2">
-                <CalendarIcon className="w-4 h-4 text-muted-foreground"/>
-                Last 12 Months
-            </Button>
-            <div className="flex items-center gap-2">
-               <Button 
-                  variant="outline" 
-                  className="bg-card border-white/10 text-white hover:bg-white/5 gap-2"
-                  onClick={() => refetch()}
-                  disabled={isRefetching}
-               >
-                  <TrendingUp className={cn("w-4 h-4", isRefetching && "animate-spin")} />
-                  {isRefetching ? "Syncing..." : "Refresh Data"}
-               </Button>
-               <Button className="bg-[#179be5] text-white hover:bg-[#148bc9] font-semibold rounded-xl gap-2">
-                  <Download className="w-4 h-4" />
-                  Export Report
-               </Button>
+      <div className="space-y-3">
+        <div className="grid gap-3 xl:grid-cols-12">
+          <section className="panel p-5 lg:p-6 xl:col-span-8" aria-labelledby="trend-title">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <h2 id="trend-title" className="text-lg">Billed and collected</h2>
+              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <span className="h-0.5 w-4 rounded-full bg-primary" /> Collected
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="h-0 w-4 border-t-2 border-dashed border-white/50" /> Billed
+                </span>
+              </div>
             </div>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Revenue Card */}
-          <Card className="border-white/5 bg-card/50 backdrop-blur-sm relative overflow-hidden">
-             <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
-             </CardHeader>
-             <CardContent>
-                <div className="text-3xl font-bold text-white">D{stats.revenue.toLocaleString()}</div>
-                <div className="flex items-center gap-2 mt-2 text-xs font-medium text-[#179be5]">
-                    <TrendingUp className="w-3 h-3" />
-                    <span>Calculated from payments</span>
-                </div>
-                <div className="absolute top-4 right-4 p-2 bg-[#179be5]/10 rounded-lg text-[#179be5]">
-                    <TrendingUp className="w-4 h-4" />
-                </div>
-             </CardContent>
-          </Card>
-
-          {/* Expenses Card (Replaced with Outstanding for now as requested by constraint) */}
-          <Card className="border-white/5 bg-card/50 backdrop-blur-sm relative overflow-hidden">
-             <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Outstanding Balance</CardTitle>
-             </CardHeader>
-             <CardContent>
-                <div className="text-3xl font-bold text-white">D{stats.outstanding.toLocaleString()}</div>
-                <div className="flex items-center gap-2 mt-2 text-xs font-medium text-amber-500">
-                    <TrendingDown className="w-3 h-3" />
-                    <span>Pending collection</span>
-                </div>
-                <div className="absolute top-4 right-4 p-2 bg-amber-500/10 rounded-lg text-amber-500">
-                    <TrendingDown className="w-4 h-4" />
-                </div>
-             </CardContent>
-          </Card>
-
-          {/* Net Profit Card (Replaced with Total Invoiced) */}
-          <Card className="border-white/5 bg-card/50 backdrop-blur-sm relative overflow-hidden">
-             <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Total Invoiced</CardTitle>
-             </CardHeader>
-             <CardContent>
-                <div className="text-3xl font-bold text-white">D{stats.invoiced.toLocaleString()}</div>
-                <div className="flex items-center gap-2 mt-2 text-xs font-medium text-blue-500">
-                    <TrendingUp className="w-3 h-3" />
-                    <span>Gross volume</span>
-                </div>
-                <div className="absolute top-4 right-4 p-2 bg-blue-500/10 rounded-lg text-blue-500">
-                    <DollarSign className="w-4 h-4" />
-                </div>
-             </CardContent>
-          </Card>
-      </div>
-
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Revenue Trend Line Chart */}
-          <Card className="lg:col-span-2 border-white/5 bg-card/50 backdrop-blur-sm">
-             <CardHeader>
-                <CardTitle className="text-lg font-semibold text-white">Revenue Trend</CardTitle>
-             </CardHeader>
-             <CardContent className="pl-0">
-                <div className="h-[300px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={stats.trendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                            <defs>
-                                <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#179be5" stopOpacity={0.3}/>
-                                    <stop offset="95%" stopColor="#179be5" stopOpacity={0}/>
-                                </linearGradient>
-                            </defs>
-                            <XAxis 
-                                dataKey="name" 
-                                axisLine={false} 
-                                tickLine={false} 
-                                tick={{ fill: '#6b7280', fontSize: 12 }} 
-                            />
-                            <YAxis 
-                                axisLine={false} 
-                                tickLine={false} 
-                                tick={{ fill: '#6b7280', fontSize: 12 }}
-                                tickFormatter={(val) => `D${val/1000}k`}
-                            />
-                            <Tooltip 
-                                contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '8px', color: '#fff' }}
-                                itemStyle={{ color: '#179be5' }}
-                                formatter={(value: number) => [`D${value.toLocaleString()}`, "Revenue"]}
-                            />
-                            <CartesianGrid vertical={false} stroke="#27272a" />
-                            <Area 
-                                type="monotone" 
-                                dataKey="value" 
-                                stroke="#179be5" 
-                                strokeWidth={3}
-                                fillOpacity={1} 
-                                fill="url(#colorRevenue)" 
-                            />
-                        </AreaChart>
-                    </ResponsiveContainer>
-                </div>
-             </CardContent>
-          </Card>
-
-          {/* Breakdown Chart */}
-          <Card className="border-white/5 bg-card/50 backdrop-blur-sm">
-             <CardHeader>
-                <CardTitle className="text-lg font-semibold text-white">Revenue by Client</CardTitle>
-             </CardHeader>
-             <CardContent>
-                <div className="h-[250px] w-full relative">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                            <Pie
-                                data={stats.clientData}
-                                innerRadius={60}
-                                outerRadius={80}
-                                paddingAngle={5}
-                                dataKey="value"
-                            >
-                                {stats.clientData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                            </Pie>
-                            <Tooltip 
-                                contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '8px', color: '#fff' }}
-                                formatter={(value: number) => [`D${value.toLocaleString()}`, "Revenue"]}
-                            />
-                        </PieChart>
-                    </ResponsiveContainer>
-                    
-                    {/* Centered Total */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
-                        <div className="text-2xl font-bold text-white">D{stats.revenue.toLocaleString(undefined, { maximumFractionDigits: 0, notation: "compact" })}</div>
-                        <div className="text-xs text-muted-foreground">Total</div>
-                    </div>
-                </div>
-
-                {/* Legend */}
-                <div className="mt-6 space-y-3">
-                    {stats.clientData.map((entry, index) => (
-                        <div key={index} className="flex items-center justify-between text-sm">
-                            <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
-                                <span className="text-gray-300">{entry.name}</span>
-                            </div>
-                            <span className="font-medium text-white">D{entry.value.toLocaleString(undefined, { notation: "compact" })}</span>
+            <div className="mt-6 h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={chart} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="collected-fill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#179be5" stopOpacity={0.28} />
+                      <stop offset="100%" stopColor="#179be5" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid vertical={false} stroke="rgb(255 255 255 / 0.06)" strokeDasharray="4 4" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={axisTick} dy={8} />
+                  <YAxis axisLine={false} tickLine={false} tick={axisTick} tickFormatter={kLabel} width={52} />
+                  <Tooltip
+                    cursor={{ stroke: "rgb(255 255 255 / 0.25)", strokeWidth: 1 }}
+                    content={({ active, payload }) => {
+                      if (!active || !payload?.length) return null;
+                      const d = payload[0].payload as (typeof chart)[number];
+                      return (
+                        <div className="rounded-xl border border-line bg-popover px-3 py-2 text-xs shadow-[0_8px_24px_rgb(0_0_0/0.4)]">
+                          <p className="mb-1 font-medium">{d.full}</p>
+                          <p className="tnum flex justify-between gap-6 text-muted-foreground">
+                            Collected <span className="text-foreground">{formatMoney(d.collected)}</span>
+                          </p>
+                          <p className="tnum flex justify-between gap-6 text-muted-foreground">
+                            Billed <span className="text-foreground">{formatMoney(d.billed)}</span>
+                          </p>
                         </div>
-                    ))}
-                </div>
-             </CardContent>
-          </Card>
+                      );
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="collected"
+                    stroke="#179be5"
+                    strokeWidth={2}
+                    fill="url(#collected-fill)"
+                    activeDot={{ r: 5, stroke: "#14171c", strokeWidth: 2, fill: "#179be5" }}
+                    isAnimationActive={intro}
+                    animationDuration={800}
+                    animationEasing="ease-out"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="billed"
+                    stroke="rgb(255 255 255 / 0.5)"
+                    strokeWidth={2}
+                    strokeDasharray="5 5"
+                    dot={false}
+                    activeDot={{ r: 4, stroke: "#14171c", strokeWidth: 2, fill: "#eef1f5" }}
+                    isAnimationActive={intro}
+                    animationDuration={800}
+                    animationEasing="ease-out"
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          </section>
 
+          <section className="panel p-5 lg:p-6 xl:col-span-4" aria-labelledby="clients-title">
+            <h2 id="clients-title" className="text-lg">By client</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Billed, with the collected part solid.</p>
+            <ul className="mt-5 space-y-4">
+              {clients.slice(0, 6).map((c, i) => (
+                <li key={c.name}>
+                  <div className="flex items-baseline justify-between gap-3 text-sm">
+                    <span className="truncate">{c.name}</span>
+                    <span className="tnum shrink-0 text-muted-foreground">{formatMoney(c.billed)}</span>
+                  </div>
+                  <div className="mt-1.5 h-2.5" style={{ width: `${(c.billed / maxClient) * 100}%` }}>
+                    <motion.div
+                      className="hatch flex h-full origin-left overflow-hidden rounded-full bg-primary/10 [--hatch-color:rgb(23_155_229/0.7)]"
+                      initial={intro ? { transform: "scaleX(0)" } : false}
+                      animate={{ transform: "scaleX(1)" }}
+                      transition={{ duration: 0.6, delay: 0.15 + i * 0.05, ease: easeOut }}
+                    >
+                      <div className="h-full rounded-full bg-primary" style={{ width: `${c.billed ? (c.collected / c.billed) * 100 : 0}%` }} />
+                    </motion.div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        </div>
+
+        {/* Monthly breakdown: the table view of the chart above, with an inline collection bar */}
+        <section className="panel overflow-hidden" aria-labelledby="breakdown-title">
+          <h2 id="breakdown-title" className="px-5 pb-4 pt-5 text-lg lg:px-6">Monthly breakdown</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[640px] text-sm">
+              <thead>
+                <tr className="bg-black/25 text-left text-xs text-muted-foreground">
+                  <th className="py-2.5 pl-5 font-medium lg:pl-6">Month</th>
+                  <th className="py-2.5 text-right font-medium">Billed</th>
+                  <th className="py-2.5 text-right font-medium">Collected</th>
+                  <th className="py-2.5 text-right font-medium">Outstanding</th>
+                  <th className="py-2.5 pl-8 pr-5 font-medium lg:pr-6">Collection rate</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...months].reverse().filter((m) => m.invoiced > 0).map((m) => {
+                  const rate = Math.round((m.collected / m.invoiced) * 100);
+                  return (
+                    <tr key={m.key} className="border-t border-line transition-colors hover:bg-white/[0.02]">
+                      <td className="py-3 pl-5 font-medium lg:pl-6">{format(m.date, "MMMM yyyy")}</td>
+                      <td className="tnum py-3 text-right">{formatMoney(m.invoiced)}</td>
+                      <td className="tnum py-3 text-right">{formatMoney(m.collected)}</td>
+                      <td className={`tnum py-3 text-right ${m.outstanding > 0 ? "text-amber" : "text-muted-foreground"}`}>
+                        {formatMoney(m.outstanding)}
+                      </td>
+                      <td className="py-3 pl-8 pr-5 lg:pr-6">
+                        <div className="flex items-center gap-3">
+                          <div className="hatch h-2 flex-1 overflow-hidden rounded-full bg-white/[0.04] [--hatch-color:rgb(255_255_255/0.14)]">
+                            <div className="h-full rounded-full bg-primary" style={{ width: `${rate}%` }} />
+                          </div>
+                          <span className="tnum w-10 text-right">{rate}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
       </div>
     </div>
   );
