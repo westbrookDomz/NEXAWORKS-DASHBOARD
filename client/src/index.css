@@ -4,91 +4,110 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  /* Font Family Tokens */
-  --font-sans: "Inter", sans-serif;
-  --font-display: "Space Grotesk", sans-serif;
+  /* Type: Bricolage Grotesque for titles and figures, Instrument Sans for UI */
+  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque", "Instrument Sans", ui-sans-serif, sans-serif;
 
-  /* Radius Tokens */
+  /* Radius hierarchy: panel > control > chip */
   --radius-sm: 0.5rem;
   --radius-md: 0.75rem;
   --radius-lg: 1rem;
-  --radius-xl: 1.5rem;
+  --radius-xl: 1.25rem;
+  --radius-panel: 1.25rem;
 
-  /* Color Tokens - H S% L% format */
-  /* Credentia Theme - Acid Yellow & Deep Black */
-  --color-background: hsl(0 0% 5%); /* #0d0d0d - Almost Black */
-  --color-foreground: hsl(0 0% 95%); /* White text */
+  /* Graphite base, cooled toward the Nexaworks blue */
+  --color-background: #0c0e12;
+  --color-foreground: #eef1f5;
 
-  --color-card: hsl(0 0% 9%); /* #171717 - Dark Gray Cards */
-  --color-card-foreground: hsl(0 0% 95%);
+  --color-card: #14171c;
+  --color-card-foreground: #eef1f5;
+  --color-raised: #1b1f26;
+  --color-line: rgb(255 255 255 / 0.07);
 
-  --color-popover: hsl(0 0% 9%);
-  --color-popover-foreground: hsl(0 0% 95%);
+  --color-popover: #181b21;
+  --color-popover-foreground: #eef1f5;
 
-  /* #179be5 converted to HSL: 202 82% 49% */
-  --color-primary: hsl(202 82% 49%); /* New Corporate Blue */
-  --color-primary-foreground: hsl(0 0% 100%); /* White text on blue */
+  /* Nexaworks blue: brand, collected money, active nav */
+  --color-primary: #179be5;
+  --color-primary-foreground: #ffffff;
 
-  --color-secondary: hsl(0 0% 15%); /* Dark gray for buttons */
-  --color-secondary-foreground: hsl(0 0% 95%);
+  --color-secondary: #1b1f26;
+  --color-secondary-foreground: #eef1f5;
 
-  --color-muted: hsl(0 0% 15%);
-  --color-muted-foreground: hsl(0 0% 50%); /* Muted gray text */
+  --color-muted: #1b1f26;
+  --color-muted-foreground: #8a93a3;
 
-  --color-accent: hsl(0 0% 15%);
-  --color-accent-foreground: hsl(0 0% 95%);
+  --color-accent: #1b1f26;
+  --color-accent-foreground: #eef1f5;
 
-  --color-destructive: hsl(0 84% 60%);
-  --color-destructive-foreground: hsl(0 0% 98%);
+  /* Signal hues (from the multi-hue KPI row in the franchise reference) */
+  --color-mint: #3fd3a3;
+  --color-amber: #f2b544;
+  --color-vermilion: #f2603d;
+  --color-violet: #8b7cf6;
 
-  --color-border: hsl(0 0% 15%);
-  --color-input: hsl(0 0% 15%);
-  --color-ring: hsl(202 82% 49%);
+  --color-destructive: #f2603d;
+  --color-destructive-foreground: #ffffff;
 
-  /* Sidebar specific */
-  --color-sidebar: hsl(0 0% 5%);
-  --color-sidebar-foreground: hsl(0 0% 60%);
-  --color-sidebar-primary: hsl(202 82% 49%);
-  --color-sidebar-primary-foreground: hsl(0 0% 100%);
-  --color-sidebar-accent: hsl(0 0% 12%);
-  --color-sidebar-accent-foreground: hsl(0 0% 95%);
-  --color-sidebar-border: hsl(0 0% 10%);
-  --color-sidebar-ring: hsl(202 82% 49%);
+  --color-border: rgb(255 255 255 / 0.07);
+  --color-input: rgb(255 255 255 / 0.1);
+  --color-ring: #179be5;
+
+  --color-sidebar: #14171c;
+  --color-sidebar-foreground: #8a93a3;
+  --color-sidebar-primary: #179be5;
+  --color-sidebar-primary-foreground: #ffffff;
+  --color-sidebar-accent: #1b1f26;
+  --color-sidebar-accent-foreground: #eef1f5;
+  --color-sidebar-border: rgb(255 255 255 / 0.07);
+  --color-sidebar-ring: #179be5;
+
+  /* Motion tokens */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
-/* Base Styles */
+:root {
+  /* Hatch runs at the slant of the Nexaworks mark (51deg). Solid = collected, hatched = still owed. */
+  --hatch-angle: 51deg;
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.4 -0.45'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    color-scheme: dark;
+  }
   body {
     @apply bg-background text-foreground font-sans antialiased selection:bg-primary selection:text-primary-foreground;
+    font-feature-settings: "tnum" 0;
   }
 
-  /* Typography Hierarchy */
   h1,
   h2,
   h3,
-  h4,
-  h5,
-  h6 {
-    @apply font-sans tracking-tight;
+  h4 {
+    @apply font-display tracking-tight text-foreground;
+    font-optical-sizing: auto;
   }
 
   h1 {
-    @apply text-4xl font-bold;
+    @apply text-[28px] leading-[1.15] font-semibold;
   }
   h2 {
-    @apply text-2xl font-semibold;
-  }
-  h3 {
     @apply text-xl font-semibold;
   }
-  h4 {
-    @apply text-lg font-medium;
+  h3 {
+    @apply text-base font-semibold;
   }
 
-  /* Custom Scrollbar */
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -97,28 +116,85 @@
     @apply bg-transparent;
   }
   ::-webkit-scrollbar-thumb {
-    @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
+    @apply bg-white/10 rounded-full;
   }
 }
 
-/* Utilities */
+@layer components {
+  /* Flat graphite panel with a hairline, as in both references. One elevation level. */
+  .panel {
+    @apply bg-card rounded-[var(--radius-panel)] border border-line;
+  }
+
+  .field {
+    @apply h-11 w-full rounded-xl border border-line bg-raised px-3.5 text-sm text-foreground outline-none placeholder:text-muted-foreground/70;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+  .field:focus-visible {
+    outline: none;
+    border-color: rgb(23 155 229 / 0.6);
+    box-shadow: 0 0 0 3px rgb(23 155 229 / 0.15);
+  }
+  .field[aria-invalid="true"] {
+    border-color: rgb(242 96 61 / 0.5);
+  }
+
+  /* Pressable feedback: every button confirms the press */
+  .pressable {
+    transition: transform 160ms var(--ease-out), background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+  }
+  .pressable:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+}
+
 @layer utilities {
-  .glass-panel {
-    @apply bg-card border-none shadow-none; /* Flat, dark aesthetic */
+  .figure {
+    font-family: var(--font-display);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+  .tnum {
+    font-variant-numeric: tabular-nums;
   }
 
-  .animate-in-fade {
-    animation: fadeIn 0.5s ease-out forwards;
+  .hatch {
+    background-image: repeating-linear-gradient(
+      var(--hatch-angle),
+      var(--hatch-color, rgb(255 255 255 / 0.22)) 0 1.5px,
+      transparent 1.5px 6px
+    );
+  }
+  .grain {
+    background-image: var(--grain);
+    background-size: 120px 120px;
+  }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+/* Error feedback on the sign-in form: short, small amplitude */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(2px); }
+}
+.animate-shake {
+  animation: shake 320ms var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pressable:active:not(:disabled) {
+    transform: none;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  .animate-shake {
+    animation: none;
   }
 }

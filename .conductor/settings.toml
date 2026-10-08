@@ -1,0 +1,12 @@
+"$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
+
+[scripts]
+setup = "npm install"
+# Each workspace gets its own port and in-memory storage, so several can run side by side.
+run_mode = "concurrent"
+
+[scripts.run.dev]
+available_in = [ "local" ]
+command = "OPEN_BROWSER=1 PORT=$CONDUCTOR_PORT npm run dev"
+default = true
+icon = "play"
