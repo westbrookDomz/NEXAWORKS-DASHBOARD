@@ -8,10 +8,10 @@ import { cn } from "@/lib/utils";
 export type Hue = "primary" | "violet" | "amber" | "mint";
 
 const HUE: Record<Hue, { solid: string; hatch: string; text: string }> = {
-  primary: { solid: "bg-primary", hatch: "[--hatch-color:rgb(23_155_229/0.55)] bg-primary/10", text: "text-primary" },
-  violet: { solid: "bg-violet", hatch: "[--hatch-color:rgb(139_124_246/0.55)] bg-violet/10", text: "text-violet" },
-  amber: { solid: "bg-amber", hatch: "[--hatch-color:rgb(242_181_68/0.55)] bg-amber/10", text: "text-amber" },
-  mint: { solid: "bg-mint", hatch: "[--hatch-color:rgb(63_211_163/0.55)] bg-mint/10", text: "text-mint" },
+  primary: { solid: "bg-primary", hatch: "hatch-primary bg-primary/10", text: "text-primary" },
+  violet: { solid: "bg-violet", hatch: "hatch-violet bg-violet/10", text: "text-violet" },
+  amber: { solid: "bg-amber", hatch: "hatch-amber bg-amber/10", text: "text-amber" },
+  mint: { solid: "bg-mint", hatch: "hatch-mint bg-mint/10", text: "text-mint" },
 };
 
 interface StatsCardProps {

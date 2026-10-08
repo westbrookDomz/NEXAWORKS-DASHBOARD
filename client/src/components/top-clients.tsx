@@ -43,7 +43,7 @@ export default function TopClients({ entries, intro }: { entries: Entry[]; intro
             </div>
             <div>
               <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <span className="hatch size-2 rounded-full bg-primary/20 [--hatch-color:rgb(23_155_229/0.9)]" /> Billed
+                <span className="hatch size-2 rounded-full bg-primary/20 hatch-primary" /> Billed
               </dt>
               <dd className="figure mt-0.5 text-[15px] font-semibold">{formatMoney(top.invoiced)}</dd>
             </div>
@@ -60,7 +60,7 @@ export default function TopClients({ entries, intro }: { entries: Entry[]; intro
             transition={{ duration: 0.6, delay: 0.3, ease: easeOut }}
           />
           <motion.div
-            className="hatch h-full w-9 origin-bottom rounded-[10px] bg-primary/15 [--hatch-color:rgb(23_155_229/0.9)]"
+            className="hatch h-full w-9 origin-bottom rounded-[10px] bg-primary/15 hatch-primary"
             initial={intro ? { transform: "scaleY(0)" } : false}
             animate={{ transform: "scaleY(1)" }}
             transition={{ duration: 0.6, delay: 0.36, ease: easeOut }}
@@ -76,9 +76,9 @@ export default function TopClients({ entries, intro }: { entries: Entry[]; intro
                 <span className="truncate">{c.name}</span>
                 <span className="tnum shrink-0 text-muted-foreground">{formatMoney(c.invoiced)}</span>
               </div>
-              <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/[0.05]">
+              <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-ink/[0.05]">
                 <motion.div
-                  className="h-full origin-left rounded-full bg-white/30"
+                  className="h-full origin-left rounded-full bg-ink/30"
                   style={{ width: `${(c.invoiced / top.invoiced) * 100}%` }}
                   initial={intro ? { transform: "scaleX(0)" } : false}
                   animate={{ transform: "scaleX(1)" }}

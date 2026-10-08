@@ -68,7 +68,7 @@ export function SegmentedFilter<T extends string>({
               active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
             )}
           >
-            {active && <motion.span layoutId={`${id}-pill`} className="absolute inset-0 rounded-lg bg-white/[0.08]" transition={snappy} />}
+            {active && <motion.span layoutId={`${id}-pill`} className="absolute inset-0 rounded-lg bg-ink/[0.08]" transition={snappy} />}
             <span className="relative">{o}</span>
             {counts?.[o] != null && <span className="tnum relative text-xs text-muted-foreground">{counts[o]}</span>}
           </button>

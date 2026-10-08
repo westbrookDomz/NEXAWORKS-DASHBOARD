@@ -2,7 +2,8 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 
 export interface AuthSession {
-  authRequired: boolean;
+  /** False when the server has no credentials set; sign-in can't succeed until it does. */
+  configured: boolean;
   user: string | null;
 }
 
@@ -11,8 +12,8 @@ const SESSION_KEY = ["/api/auth/session"];
 async function readSession(): Promise<AuthSession> {
   const res = await fetch("/api/auth/session", { credentials: "include" });
   const type = res.headers.get("content-type") ?? "";
-  // Client-only dev mode has no API; treat it as an open workspace.
-  if (!res.ok || !type.includes("application/json")) return { authRequired: false, user: null };
+  // No API (client-only dev mode): show the sign-in screen; signing in will explain the server isn't reachable.
+  if (!res.ok || !type.includes("application/json")) return { configured: true, user: null };
   return res.json();
 }
 
@@ -43,18 +44,18 @@ export function useAuth() {
       await fetch("/api/auth/logout", { method: "POST", credentials: "include" }).catch(() => {});
     },
     onSuccess: () => {
-      queryClient.setQueryData<AuthSession>(SESSION_KEY, (s) => ({ authRequired: s?.authRequired ?? false, user: null }));
+      queryClient.setQueryData<AuthSession>(SESSION_KEY, (s) => ({ configured: s?.configured ?? true, user: null }));
       queryClient.removeQueries({ queryKey: ["/api/payments"] });
     },
   });
 
   /** Called after the success animation finishes, so the dashboard mounts once the hand-off is done. */
   const completeLogin = (user: string) =>
-    queryClient.setQueryData<AuthSession>(SESSION_KEY, (s) => ({ authRequired: s?.authRequired ?? false, user }));
+    queryClient.setQueryData<AuthSession>(SESSION_KEY, (s) => ({ configured: s?.configured ?? true, user }));
 
   return {
     user: session.data?.user ?? null,
-    authRequired: session.data?.authRequired ?? false,
+    configured: session.data?.configured ?? true,
     isLoading: session.isLoading,
     login,
     logout,

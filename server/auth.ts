@@ -10,11 +10,10 @@ declare module "express-session" {
 }
 
 /**
- * Single-account sign-in for the studio.
- * Set APP_USERNAME and APP_PASSWORD to require it. Without them the API stays open (as before)
- * and the sign-in screen accepts any name, which the screen tells the user.
+ * Single-account sign-in for the studio, set with APP_USERNAME and APP_PASSWORD.
+ * Fails closed: if either is missing, nobody can sign in and the data API stays locked.
  */
-export function authRequired(): boolean {
+export function authConfigured(): boolean {
   return Boolean(process.env.APP_USERNAME && process.env.APP_PASSWORD);
 }
 
@@ -25,6 +24,9 @@ function safeEqual(a: string, b: string): boolean {
 }
 
 export function setupAuth(app: Express) {
+  if (!authConfigured()) {
+    console.warn("[auth] APP_USERNAME / APP_PASSWORD are not set. Sign-in is disabled and data routes are locked.");
+  }
   const MemoryStore = createMemoryStore(session);
   if (process.env.NODE_ENV === "production") app.set("trust proxy", 1);
 
@@ -44,7 +46,7 @@ export function setupAuth(app: Express) {
   );
 
   app.get("/api/auth/session", (req, res) => {
-    res.json({ authRequired: authRequired(), user: req.session.user ?? null });
+    res.json({ configured: authConfigured(), user: req.session.user ?? null });
   });
 
   app.post("/api/auth/login", (req, res) => {
@@ -54,10 +56,13 @@ export function setupAuth(app: Express) {
       return res.status(400).json({ message: "Enter your username and password." });
     }
 
-    if (authRequired()) {
-      const ok = safeEqual(name, process.env.APP_USERNAME!) && safeEqual(password, process.env.APP_PASSWORD!);
-      if (!ok) return res.status(401).json({ message: "That username and password don't match." });
+    if (!authConfigured()) {
+      return res.status(503).json({
+        message: "Sign-in isn't set up on this server. Add APP_USERNAME and APP_PASSWORD to .env, then restart it.",
+      });
     }
+    const ok = safeEqual(name, process.env.APP_USERNAME!) && safeEqual(password, process.env.APP_PASSWORD!);
+    if (!ok) return res.status(401).json({ message: "That username and password don't match." });
 
     req.session.regenerate((err) => {
       if (err) return res.status(500).json({ message: "Couldn't start a session. Try again." });
@@ -74,8 +79,8 @@ export function setupAuth(app: Express) {
   });
 }
 
-/** Guards data routes when sign-in is required. */
+/** Guards data routes: only a signed-in session gets through. */
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
-  if (!authRequired() || req.session.user) return next();
+  if (authConfigured() && req.session.user) return next();
   res.status(401).json({ message: "Sign in to continue." });
 }

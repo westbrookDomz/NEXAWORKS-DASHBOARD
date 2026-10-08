@@ -48,7 +48,7 @@ export default function Invoices() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[680px] text-sm">
             <thead>
-              <tr className="bg-black/25 text-left text-xs text-muted-foreground">
+              <tr className="bg-sunken text-left text-xs text-muted-foreground">
                 <th className="py-2.5 pl-5 font-medium lg:pl-6">Invoice</th>
                 <th className="py-2.5 font-medium">Client</th>
                 <th className="py-2.5 font-medium">Issued</th>
@@ -66,7 +66,7 @@ export default function Invoices() {
                   </tr>
                 ))}
               {rows.map((e) => (
-                <tr key={e.id} className="border-t border-line transition-colors hover:bg-white/[0.02]">
+                <tr key={e.id} className="border-t border-line transition-colors hover:bg-ink/[0.02]">
                   <td className="py-3 pl-5 lg:pl-6">
                     <div className="flex items-center gap-3">
                       <span className="grid size-8 place-items-center rounded-lg bg-raised text-muted-foreground">

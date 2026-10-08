@@ -12,7 +12,7 @@ const PREVIEW_BARS = [0.42, 0.3, 0.58, 0.46, 0.72, 0.9];
 type Phase = "idle" | "submitting" | "success";
 
 export default function Login() {
-  const { login, completeLogin, authRequired } = useAuth();
+  const { login, completeLogin, configured } = useAuth();
   const reduce = useReducedMotion();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -60,11 +60,11 @@ export default function Login() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4, ease: easeOut }}
       >
-        <div className="hatch pointer-events-none absolute inset-0 opacity-[0.35] [--hatch-color:rgb(255_255_255/0.035)]" />
+        <div className="hatch pointer-events-none absolute inset-0 opacity-[0.35] hatch-faint" />
 
         <div className="relative flex items-center gap-3 text-sm text-muted-foreground">
           <span className="font-display text-base font-semibold text-foreground">Nexaworks</span>
-          <span className="h-4 w-px bg-white/15" />
+          <span className="h-4 w-px bg-ink/15" />
           DesignBoard Pro
         </div>
 
@@ -83,7 +83,7 @@ export default function Login() {
                 key={i}
                 className={cn(
                   "w-10 origin-bottom rounded-[10px]",
-                  last ? "bg-primary" : "hatch bg-white/[0.04] [--hatch-color:rgb(255_255_255/0.18)]",
+                  last ? "bg-primary" : "hatch bg-ink/[0.04] hatch-soft",
                 )}
                 style={{ height: `${h * 100}%` }}
                 initial={{ transform: reduce ? "scaleY(1)" : "scaleY(0)", opacity: reduce ? 0 : 1 }}
@@ -174,7 +174,7 @@ export default function Login() {
                 disabled={phase !== "idle"}
                 className={cn(
                   "pressable relative h-11 w-full overflow-hidden rounded-xl font-medium text-primary-foreground",
-                  phase === "success" ? "bg-mint text-[#06281c]" : "bg-primary hover:bg-[#2aa6ec]",
+                  phase === "success" ? "bg-mint text-background" : "bg-primary hover:bg-primary-hover",
                   "disabled:cursor-default",
                 )}
               >
@@ -205,10 +205,13 @@ export default function Login() {
             </motion.div>
           </form>
 
-          {!authRequired && (
-            <motion.p {...rise(5)} className="mt-6 rounded-xl border border-line bg-raised/60 p-3 text-xs leading-relaxed text-muted-foreground">
-              Sign-in isn't enforced on this workspace yet, so any username works. Add APP_USERNAME and
-              APP_PASSWORD to .env to require them.
+          {!configured && (
+            <motion.p
+              {...rise(5)}
+              role="status"
+              className="mt-6 rounded-xl border border-vermilion/25 bg-vermilion/[0.06] p-3 text-xs leading-relaxed text-vermilion"
+            >
+              Sign-in isn't set up on this server yet. Add APP_USERNAME and APP_PASSWORD to .env, then restart it.
             </motion.p>
           )}
         </div>

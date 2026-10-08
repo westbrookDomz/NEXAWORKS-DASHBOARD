@@ -53,7 +53,7 @@ export default function BillingBars({ entries, intro }: { entries: Entry[]; intr
               <span className="size-2.5 rounded-[3px] bg-primary" /> Collected
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="hatch size-2.5 rounded-[3px] bg-primary/15 [--hatch-color:rgb(23_155_229/0.9)]" /> Still owed
+              <span className="hatch size-2.5 rounded-[3px] bg-primary/15 hatch-primary" /> Still owed
             </span>
           </div>
         </div>
@@ -99,7 +99,7 @@ export default function BillingBars({ entries, intro }: { entries: Entry[]; intr
             {ticks.map((t) => (
               <div
                 key={t}
-                className={cn("absolute inset-x-0 border-t", t === 0 ? "border-white/10" : "border-dashed border-white/[0.06]")}
+                className={cn("absolute inset-x-0 border-t", t === 0 ? "border-ink/10" : "border-dashed border-ink/[0.06]")}
                 style={{ top: `${(1 - t) * 100}%` }}
               />
             ))}
@@ -115,13 +115,13 @@ export default function BillingBars({ entries, intro }: { entries: Entry[]; intr
                     className="absolute left-1/2 flex -translate-x-1/2 flex-col items-center"
                     style={{ bottom: `calc(${(current.invoiced / top) * 100}% + 10px)` }}
                   >
-                    <div className="whitespace-nowrap rounded-xl bg-white px-3 py-1.5 text-center text-background shadow-[0_8px_24px_rgb(0_0_0/0.4)]">
+                    <div className="whitespace-nowrap rounded-xl bg-foreground px-3 py-1.5 text-center text-background shadow-[var(--shadow-pop)]">
                       <p className="figure text-sm font-semibold leading-tight">{formatMoney(current.invoiced)}</p>
                       {current.outstanding > 0 && (
-                        <p className="tnum text-[11px] leading-tight text-neutral-500">{formatMoney(current.outstanding)} owed</p>
+                        <p className="tnum text-[11px] leading-tight text-background/60">{formatMoney(current.outstanding)} owed</p>
                       )}
                     </div>
-                    <span className="mt-1.5 size-3 rounded-full border-[3px] border-white bg-background" />
+                    <span className="mt-1.5 size-3 rounded-full border-[3px] border-foreground bg-background" />
                   </div>
                 </div>
               </div>
@@ -157,14 +157,14 @@ export default function BillingBars({ entries, intro }: { entries: Entry[]; intr
                           className={cn(
                             "hatch flex-1 transition-colors duration-200",
                             isActive
-                              ? "bg-primary/15 [--hatch-color:rgb(23_155_229/0.9)]"
-                              : "bg-white/[0.03] [--hatch-color:rgb(255_255_255/0.16)]",
+                              ? "bg-primary/15 hatch-primary"
+                              : "bg-ink/[0.03] hatch-soft",
                           )}
                         />
                         <div
                           className={cn(
                             "transition-colors duration-200",
-                            isActive ? "bg-primary" : "bg-white/[0.14]",
+                            isActive ? "bg-primary" : "bg-ink/[0.14]",
                             // 2px surface gap between the collected and owed segments
                             paidShare > 0 && paidShare < 100 && "border-t-2 border-card",
                           )}
@@ -172,7 +172,7 @@ export default function BillingBars({ entries, intro }: { entries: Entry[]; intr
                         />
                       </motion.div>
                     ) : (
-                      <div className="hatch h-1.5 w-full max-w-[64px] rounded-full bg-white/[0.03] [--hatch-color:rgb(255_255_255/0.12)]" />
+                      <div className="hatch h-1.5 w-full max-w-[64px] rounded-full bg-ink/[0.03] hatch-soft" />
                     )}
                   </button>
                 );

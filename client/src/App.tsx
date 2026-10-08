@@ -12,6 +12,11 @@ import Placeholder from "@/pages/placeholder";
 import Projects from "@/pages/projects";
 import Reports from "@/pages/reports";
 import Login from "@/pages/login";
+import Customers from "@/pages/customers";
+import Tasks from "@/pages/tasks";
+import Files from "@/pages/files";
+import Pricing from "@/pages/pricing";
+import Reviews from "@/pages/reviews";
 import { useAuth } from "@/hooks/use-auth";
 
 import DashboardLayout from "@/components/dashboard-layout";
@@ -22,14 +27,14 @@ function Router() {
       <Switch>
         <Route path="/" component={Dashboard} />
         <Route path="/projects" component={Projects} />
-        <Route path="/customers">{() => <Placeholder title="Customers" />}</Route>
+        <Route path="/customers" component={Customers} />
         <Route path="/invoices" component={Invoices} />
         <Route path="/payments" component={Payments} />
         <Route path="/reports" component={Reports} />
-        <Route path="/tasks">{() => <Placeholder title="Tasks" />}</Route>
-        <Route path="/files">{() => <Placeholder title="Files" />}</Route>
-        <Route path="/pricing">{() => <Placeholder title="Pricing" />}</Route>
-        <Route path="/reviews">{() => <Placeholder title="Reviews" />}</Route>
+        <Route path="/tasks" component={Tasks} />
+        <Route path="/files" component={Files} />
+        <Route path="/pricing" component={Pricing} />
+        <Route path="/reviews" component={Reviews} />
         <Route path="/settings">{() => <Placeholder title="Settings" />}</Route>
         <Route component={NotFound} />
       </Switch>
