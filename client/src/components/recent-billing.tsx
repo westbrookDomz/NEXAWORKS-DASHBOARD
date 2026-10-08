@@ -27,7 +27,7 @@ export default function RecentBilling({ entries }: { entries: Entry[] }) {
         </div>
         <Link
           href="/payments"
-          className="pressable shrink-0 rounded-xl border border-line bg-raised px-3.5 py-2 text-sm font-medium transition-colors hover:bg-white/[0.07]"
+          className="pressable shrink-0 rounded-xl border border-line bg-raised px-3.5 py-2 text-sm font-medium transition-colors hover:bg-ink/[0.07]"
         >
           All payments
         </Link>
@@ -36,7 +36,7 @@ export default function RecentBilling({ entries }: { entries: Entry[] }) {
       <div className="overflow-x-auto">
         <table className="w-full min-w-[640px] text-sm">
           <thead>
-            <tr className="bg-black/25 text-left text-xs text-muted-foreground">
+            <tr className="bg-sunken text-left text-xs text-muted-foreground">
               <th className="py-2.5 pl-5 font-medium lg:pl-6">Client</th>
               <th className="py-2.5 font-medium">Project</th>
               <th className="py-2.5 font-medium">Issued</th>
@@ -46,7 +46,7 @@ export default function RecentBilling({ entries }: { entries: Entry[] }) {
           </thead>
           <tbody>
             {rows.map((e) => (
-              <tr key={e.id} className="border-t border-line transition-colors hover:bg-white/[0.02]">
+              <tr key={e.id} className="border-t border-line transition-colors hover:bg-ink/[0.02]">
                 <td className="py-3 pl-5 lg:pl-6">
                   <div className="flex items-center gap-3">
                     <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-raised font-display text-sm font-semibold text-foreground">

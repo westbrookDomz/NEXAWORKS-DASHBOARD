@@ -11,13 +11,15 @@ import { useIntro } from "@/hooks/use-intro";
 import { downloadCsv } from "@/lib/csv";
 import { formatMoney, monthlySeries } from "@/lib/finance";
 import { easeOut } from "@/lib/motion";
+import { CHART, useTheme } from "@/lib/theme";
 
-const axisTick = { fill: "#8a93a3", fontSize: 12 };
 const kLabel = (v: number) => (v >= 1000 ? `D${+(v / 1000).toFixed(1)}k` : `D${v}`);
 
 export default function Reports() {
   const { entries, isLoading } = useEntries();
   const intro = useIntro("reports");
+  const c = CHART[useTheme()];
+  const axisTick = { fill: c.tick, fontSize: 12 };
 
   const months = useMemo(() => monthlySeries(entries, 12), [entries]);
   const chart = months.map((m) => ({ name: m.label, full: format(m.date, "MMMM yyyy"), billed: m.invoiced, collected: m.collected }));
@@ -73,7 +75,7 @@ export default function Reports() {
                   <span className="h-0.5 w-4 rounded-full bg-primary" /> Collected
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="h-0 w-4 border-t-2 border-dashed border-white/50" /> Billed
+                  <span className="h-0 w-4 border-t-2 border-dashed border-ink/50" /> Billed
                 </span>
               </div>
             </div>
@@ -82,20 +84,20 @@ export default function Reports() {
                 <ComposedChart data={chart} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="collected-fill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#179be5" stopOpacity={0.28} />
-                      <stop offset="100%" stopColor="#179be5" stopOpacity={0} />
+                      <stop offset="0%" stopColor={c.primary} stopOpacity={0.28} />
+                      <stop offset="100%" stopColor={c.primary} stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid vertical={false} stroke="rgb(255 255 255 / 0.06)" strokeDasharray="4 4" />
+                  <CartesianGrid vertical={false} stroke={c.grid} strokeDasharray="4 4" />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={axisTick} dy={8} />
                   <YAxis axisLine={false} tickLine={false} tick={axisTick} tickFormatter={kLabel} width={52} />
                   <Tooltip
-                    cursor={{ stroke: "rgb(255 255 255 / 0.25)", strokeWidth: 1 }}
+                    cursor={{ stroke: c.cursor, strokeWidth: 1 }}
                     content={({ active, payload }) => {
                       if (!active || !payload?.length) return null;
                       const d = payload[0].payload as (typeof chart)[number];
                       return (
-                        <div className="rounded-xl border border-line bg-popover px-3 py-2 text-xs shadow-[0_8px_24px_rgb(0_0_0/0.4)]">
+                        <div className="rounded-xl border border-line bg-popover px-3 py-2 text-xs shadow-[var(--shadow-pop)]">
                           <p className="mb-1 font-medium">{d.full}</p>
                           <p className="tnum flex justify-between gap-6 text-muted-foreground">
                             Collected <span className="text-foreground">{formatMoney(d.collected)}</span>
@@ -110,10 +112,10 @@ export default function Reports() {
                   <Area
                     type="monotone"
                     dataKey="collected"
-                    stroke="#179be5"
+                    stroke={c.primary}
                     strokeWidth={2}
                     fill="url(#collected-fill)"
-                    activeDot={{ r: 5, stroke: "#14171c", strokeWidth: 2, fill: "#179be5" }}
+                    activeDot={{ r: 5, stroke: c.surface, strokeWidth: 2, fill: c.primary }}
                     isAnimationActive={intro}
                     animationDuration={800}
                     animationEasing="ease-out"
@@ -121,11 +123,11 @@ export default function Reports() {
                   <Line
                     type="monotone"
                     dataKey="billed"
-                    stroke="rgb(255 255 255 / 0.5)"
+                    stroke={c.inkSoft}
                     strokeWidth={2}
                     strokeDasharray="5 5"
                     dot={false}
-                    activeDot={{ r: 4, stroke: "#14171c", strokeWidth: 2, fill: "#eef1f5" }}
+                    activeDot={{ r: 4, stroke: c.surface, strokeWidth: 2, fill: c.ink }}
                     isAnimationActive={intro}
                     animationDuration={800}
                     animationEasing="ease-out"
@@ -147,7 +149,7 @@ export default function Reports() {
                   </div>
                   <div className="mt-1.5 h-2.5" style={{ width: `${(c.billed / maxClient) * 100}%` }}>
                     <motion.div
-                      className="hatch flex h-full origin-left overflow-hidden rounded-full bg-primary/10 [--hatch-color:rgb(23_155_229/0.7)]"
+                      className="hatch flex h-full origin-left overflow-hidden rounded-full bg-primary/10 hatch-primary"
                       initial={intro ? { transform: "scaleX(0)" } : false}
                       animate={{ transform: "scaleX(1)" }}
                       transition={{ duration: 0.6, delay: 0.15 + i * 0.05, ease: easeOut }}
@@ -167,7 +169,7 @@ export default function Reports() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[640px] text-sm">
               <thead>
-                <tr className="bg-black/25 text-left text-xs text-muted-foreground">
+                <tr className="bg-sunken text-left text-xs text-muted-foreground">
                   <th className="py-2.5 pl-5 font-medium lg:pl-6">Month</th>
                   <th className="py-2.5 text-right font-medium">Billed</th>
                   <th className="py-2.5 text-right font-medium">Collected</th>
@@ -179,7 +181,7 @@ export default function Reports() {
                 {[...months].reverse().filter((m) => m.invoiced > 0).map((m) => {
                   const rate = Math.round((m.collected / m.invoiced) * 100);
                   return (
-                    <tr key={m.key} className="border-t border-line transition-colors hover:bg-white/[0.02]">
+                    <tr key={m.key} className="border-t border-line transition-colors hover:bg-ink/[0.02]">
                       <td className="py-3 pl-5 font-medium lg:pl-6">{format(m.date, "MMMM yyyy")}</td>
                       <td className="tnum py-3 text-right">{formatMoney(m.invoiced)}</td>
                       <td className="tnum py-3 text-right">{formatMoney(m.collected)}</td>
@@ -188,7 +190,7 @@ export default function Reports() {
                       </td>
                       <td className="py-3 pl-8 pr-5 lg:pr-6">
                         <div className="flex items-center gap-3">
-                          <div className="hatch h-2 flex-1 overflow-hidden rounded-full bg-white/[0.04] [--hatch-color:rgb(255_255_255/0.14)]">
+                          <div className="hatch h-2 flex-1 overflow-hidden rounded-full bg-ink/[0.04] hatch-soft">
                             <div className="h-full rounded-full bg-primary" style={{ width: `${rate}%` }} />
                           </div>
                           <span className="tnum w-10 text-right">{rate}%</span>

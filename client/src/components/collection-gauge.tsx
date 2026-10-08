@@ -42,7 +42,7 @@ export default function CollectionGauge({ entries, intro }: { entries: Entry[]; 
       collectedPct: total ? Math.round((collected / total) * 100) : 0,
       parts: [
         { key: "collected", label: "Collected", value: collected, fill: "var(--color-primary)", swatch: "bg-primary" },
-        { key: "pending", label: "Pending", value: pending, fill: `url(#${id}-hatch)`, swatch: "hatch bg-white/[0.06] [--hatch-color:rgb(255_255_255/0.45)]" },
+        { key: "pending", label: "Pending", value: pending, fill: `url(#${id}-hatch)`, swatch: "hatch bg-ink/[0.06] hatch-strong" },
         { key: "overdue", label: "Overdue", value: overdue, fill: `url(#${id}-grain)`, swatch: "grain bg-vermilion/60" },
       ],
     };
@@ -71,11 +71,11 @@ export default function CollectionGauge({ entries, intro }: { entries: Entry[]; 
         <svg viewBox="0 0 320 172" className="w-full overflow-visible" role="img" aria-label={`${collectedPct}% of ${formatMoney(total)} collected`}>
           <defs>
             <pattern id={`${id}-hatch`} width="6" height="6" patternUnits="userSpaceOnUse" patternTransform={HATCH_TRANSFORM}>
-              <rect width="6" height="6" fill="rgb(255 255 255 / 0.05)" />
-              <line x1="0" y1="0" x2="0" y2="6" stroke="rgb(255 255 255 / 0.4)" strokeWidth="3" />
+              <rect width="6" height="6" style={{ fill: "var(--color-ink)", fillOpacity: 0.05 }} />
+              <line x1="0" y1="0" x2="0" y2="6" strokeWidth="3" style={{ stroke: "var(--color-ink)", strokeOpacity: 0.4 }} />
             </pattern>
             <pattern id={`${id}-grain`} width="120" height="120" patternUnits="userSpaceOnUse">
-              <rect width="120" height="120" fill="#f2603d" opacity="0.55" />
+              <rect width="120" height="120" style={{ fill: "var(--color-vermilion)", fillOpacity: 0.6 }} />
               <image href={GRAIN_URI} width="120" height="120" />
             </pattern>
             {/* Sweep: a thick stroke along the gauge's midline is drawn left to right and reveals the segments */}
@@ -92,10 +92,10 @@ export default function CollectionGauge({ entries, intro }: { entries: Entry[]; 
             </mask>
           </defs>
 
-          {arcs.length === 0 && <path d={sector(180, 0)} fill="rgb(255 255 255 / 0.05)" />}
+          {arcs.length === 0 && <path d={sector(180, 0)} style={{ fill: "var(--color-ink)", fillOpacity: 0.05 }} />}
           <g mask={`url(#${id}-sweep)`}>
             {arcs.map((a) => (
-              <path key={a.key} d={a.d} fill={a.fill} stroke={a.fill} strokeWidth="6" strokeLinejoin="round" />
+              <path key={a.key} d={a.d} strokeWidth="6" strokeLinejoin="round" style={{ fill: a.fill, stroke: a.fill }} />
             ))}
           </g>
         </svg>

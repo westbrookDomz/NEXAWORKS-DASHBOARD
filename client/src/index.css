@@ -15,56 +15,100 @@
   --radius-xl: 1.25rem;
   --radius-panel: 1.25rem;
 
-  /* Graphite base, cooled toward the Nexaworks blue */
-  --color-background: #0c0e12;
-  --color-foreground: #eef1f5;
+  /* Colours resolve per theme (see :root and .light below) */
+  --color-background: var(--bg);
+  --color-foreground: var(--fg);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--fg);
+  --color-raised: var(--raised);
+  --color-sunken: var(--sunken);
+  --color-line: var(--line);
+  /* "ink" is the contrast colour for tints and overlays: white on dark, near-black on light */
+  --color-ink: var(--ink);
 
-  --color-card: #14171c;
-  --color-card-foreground: #eef1f5;
-  --color-raised: #1b1f26;
-  --color-line: rgb(255 255 255 / 0.07);
-
-  --color-popover: #181b21;
-  --color-popover-foreground: #eef1f5;
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--fg);
 
   /* Nexaworks blue: brand, collected money, active nav */
-  --color-primary: #179be5;
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: #ffffff;
 
-  --color-secondary: #1b1f26;
-  --color-secondary-foreground: #eef1f5;
-
-  --color-muted: #1b1f26;
-  --color-muted-foreground: #8a93a3;
-
-  --color-accent: #1b1f26;
-  --color-accent-foreground: #eef1f5;
+  --color-secondary: var(--raised);
+  --color-secondary-foreground: var(--fg);
+  --color-muted: var(--raised);
+  --color-muted-foreground: var(--muted);
+  --color-accent: var(--raised);
+  --color-accent-foreground: var(--fg);
 
   /* Signal hues (from the multi-hue KPI row in the franchise reference) */
-  --color-mint: #3fd3a3;
-  --color-amber: #f2b544;
-  --color-vermilion: #f2603d;
-  --color-violet: #8b7cf6;
+  --color-mint: var(--mint);
+  --color-amber: var(--amber);
+  --color-vermilion: var(--vermilion);
+  --color-violet: var(--violet);
 
-  --color-destructive: #f2603d;
+  --color-destructive: var(--vermilion);
   --color-destructive-foreground: #ffffff;
 
-  --color-border: rgb(255 255 255 / 0.07);
-  --color-input: rgb(255 255 255 / 0.1);
-  --color-ring: #179be5;
+  --color-border: var(--line);
+  --color-input: var(--line);
+  --color-ring: var(--primary);
 
-  --color-sidebar: #14171c;
-  --color-sidebar-foreground: #8a93a3;
-  --color-sidebar-primary: #179be5;
+  --color-sidebar: var(--surface);
+  --color-sidebar-foreground: var(--muted);
+  --color-sidebar-primary: var(--primary);
   --color-sidebar-primary-foreground: #ffffff;
-  --color-sidebar-accent: #1b1f26;
-  --color-sidebar-accent-foreground: #eef1f5;
-  --color-sidebar-border: rgb(255 255 255 / 0.07);
-  --color-sidebar-ring: #179be5;
+  --color-sidebar-accent: var(--raised);
+  --color-sidebar-accent-foreground: var(--fg);
+  --color-sidebar-border: var(--line);
+  --color-sidebar-ring: var(--primary);
 
   /* Motion tokens */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+:root,
+.dark {
+  /* Dark: graphite, cooled toward the Nexaworks blue */
+  --bg: #0c0e12;
+  --fg: #eef1f5;
+  --surface: #14171c;
+  --raised: #1b1f26;
+  --sunken: #101318;
+  --popover: #181b21;
+  --line: rgb(255 255 255 / 0.07);
+  --ink: #ffffff;
+  --muted: #8a93a3;
+  --primary: #179be5;
+  --primary-hover: #2aa6ec;
+  --mint: #3fd3a3;
+  --amber: #f2b544;
+  --vermilion: #f2603d;
+  --violet: #8b7cf6;
+  --shadow-pop: 0 12px 32px rgb(0 0 0 / 0.45);
+  color-scheme: dark;
+}
+
+/* Light: drafting paper. Cool greys with white panels; signal hues deepened so they read as text on white. */
+.light {
+  --bg: #edf0f4;
+  --fg: #0f1318;
+  --surface: #ffffff;
+  --raised: #f2f4f7;
+  --sunken: #f6f8fa;
+  --popover: #ffffff;
+  --line: rgb(15 19 24 / 0.09);
+  --ink: #0f1318;
+  --muted: #5d6676;
+  --primary: #0e8ad3;
+  --primary-hover: #0b7dc0;
+  --mint: #0c9a71;
+  --amber: #b5740c;
+  --vermilion: #d6461f;
+  --violet: #6a57e6;
+  --shadow-pop: 0 12px 32px rgb(15 19 24 / 0.14);
+  color-scheme: light;
 }
 
 :root {
@@ -76,9 +120,6 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
-  }
-  html {
-    color-scheme: dark;
   }
   body {
     @apply bg-background text-foreground font-sans antialiased selection:bg-primary selection:text-primary-foreground;
@@ -116,7 +157,7 @@
     @apply bg-transparent;
   }
   ::-webkit-scrollbar-thumb {
-    @apply bg-white/10 rounded-full;
+    @apply bg-ink/15 rounded-full;
   }
 }
 
@@ -132,11 +173,11 @@
   }
   .field:focus-visible {
     outline: none;
-    border-color: rgb(23 155 229 / 0.6);
-    box-shadow: 0 0 0 3px rgb(23 155 229 / 0.15);
+    border-color: color-mix(in srgb, var(--primary) 60%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);
   }
   .field[aria-invalid="true"] {
-    border-color: rgb(242 96 61 / 0.5);
+    border-color: color-mix(in srgb, var(--vermilion) 50%, transparent);
   }
 
   /* Pressable feedback: every button confirms the press */
@@ -161,10 +202,20 @@
   .hatch {
     background-image: repeating-linear-gradient(
       var(--hatch-angle),
-      var(--hatch-color, rgb(255 255 255 / 0.22)) 0 1.5px,
+      var(--hatch-color, color-mix(in srgb, var(--ink) 22%, transparent)) 0 1.5px,
       transparent 1.5px 6px
     );
   }
+  /* Hatch strengths and tints, so hatching follows the theme */
+  .hatch-faint { --hatch-color: color-mix(in srgb, var(--ink) 4%, transparent); }
+  .hatch-soft { --hatch-color: color-mix(in srgb, var(--ink) 14%, transparent); }
+  .hatch-strong { --hatch-color: color-mix(in srgb, var(--ink) 42%, transparent); }
+  .hatch-primary { --hatch-color: color-mix(in srgb, var(--primary) 85%, transparent); }
+  .hatch-violet { --hatch-color: color-mix(in srgb, var(--violet) 60%, transparent); }
+  .hatch-amber { --hatch-color: color-mix(in srgb, var(--amber) 60%, transparent); }
+  .hatch-mint { --hatch-color: color-mix(in srgb, var(--mint) 60%, transparent); }
+  .hatch-on-primary { --hatch-color: rgb(255 255 255 / 0.13); }
+
   .grain {
     background-image: var(--grain);
     background-size: 120px 120px;
@@ -179,6 +230,13 @@
 }
 
 /* Error feedback on the sign-in form: short, small amplitude */
+/* Theme switch: a circle grows from the toggle (see lib/theme.ts). Default cross-fade is turned off. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
   20% { transform: translateX(-6px); }

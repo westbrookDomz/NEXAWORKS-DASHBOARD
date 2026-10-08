@@ -2,6 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!-- Apply the saved theme before first paint so there's no flash of the wrong theme -->
+    <script>
+      try {
+        document.documentElement.classList.add(localStorage.getItem("theme") === "light" ? "light" : "dark");
+      } catch (e) {
+        document.documentElement.classList.add("dark");
+      }
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
 
     <meta property="og:title" content="DesignBoard Pro" />
@@ -20,7 +28,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <!-- Bricolage Grotesque for titles and figures, Instrument Sans for UI. Both ship tabular numerals. -->
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Instrument+Sans:wght@400..600&display=swap" rel="stylesheet">
-    <meta name="theme-color" content="#0C0E12" />
+    <meta name="theme-color" content="#0c0e12" />
   </head>
   <body>
     <div id="root"></div>

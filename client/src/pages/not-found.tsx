@@ -7,7 +7,7 @@ export default function NotFound() {
       <PageHeader title="Page not found" description="That address doesn't match any page on the board." />
       <Link
         href="/"
-        className="pressable inline-flex rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-[#2aa6ec]"
+        className="pressable inline-flex rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
       >
         Back to overview
       </Link>

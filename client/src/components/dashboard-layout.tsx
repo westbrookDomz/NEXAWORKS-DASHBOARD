@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { formatDistanceToNowStrict } from "date-fns";
 import {
   LayoutGrid,
@@ -20,6 +20,12 @@ import {
   RefreshCw,
   Menu,
   ImageUp,
+  Wallet,
+  FolderKanban,
+  Contact,
+  ChevronDown,
+  Sun,
+  Moon,
   type LucideIcon,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -47,6 +53,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { formatMoney, formatDate } from "@/lib/finance";
 import { easeOut, snappy } from "@/lib/motion";
 import { cn } from "@/lib/utils";
+import { setTheme, useTheme } from "@/lib/theme";
 import profileImage from "@assets/user_profile.jpg";
 
 interface NavItem {
@@ -55,72 +62,169 @@ interface NavItem {
   href: string;
 }
 
-const NAV: { label: string; items: NavItem[] }[] = [
+interface NavGroup {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+  items: NavItem[];
+}
+
+const OVERVIEW: NavItem = { icon: LayoutGrid, label: "Overview", href: "/" };
+const SETTINGS: NavItem = { icon: Settings, label: "Settings", href: "/settings" };
+
+/** Pages grouped by the job they do, so the sidebar stays short. */
+const GROUPS: NavGroup[] = [
   {
-    label: "Menu",
+    id: "finance",
+    label: "Finance",
+    icon: Wallet,
     items: [
-      { icon: LayoutGrid, label: "Overview", href: "/" },
-      { icon: Briefcase, label: "Projects", href: "/projects" },
-      { icon: Users, label: "Customers", href: "/customers" },
       { icon: FileText, label: "Invoices", href: "/invoices" },
       { icon: CreditCard, label: "Payments", href: "/payments" },
       { icon: BarChart3, label: "Reports", href: "/reports" },
+      { icon: Percent, label: "Pricing", href: "/pricing" },
+    ],
+  },
+  {
+    id: "work",
+    label: "Work",
+    icon: Briefcase,
+    items: [
+      { icon: FolderKanban, label: "Projects", href: "/projects" },
       { icon: CheckSquare, label: "Tasks", href: "/tasks" },
       { icon: Folder, label: "Files", href: "/files" },
     ],
   },
   {
-    label: "Studio",
+    id: "clients",
+    label: "Clients",
+    icon: Users,
     items: [
-      { icon: Percent, label: "Pricing", href: "/pricing" },
+      { icon: Contact, label: "Customers", href: "/customers" },
       { icon: MessageSquare, label: "Reviews", href: "/reviews" },
-      { icon: Settings, label: "Settings", href: "/settings" },
     ],
   },
 ];
 
-const ALL_PAGES = NAV.flatMap((g) => g.items);
+const ALL_PAGES = [OVERVIEW, ...GROUPS.flatMap((g) => g.items), SETTINGS];
+
+function NavLink({ item, onNavigate, nested }: { item: NavItem; onNavigate?: () => void; nested?: boolean }) {
+  const [location] = useLocation();
+  const active = location === item.href;
+  return (
+    <Link
+      href={item.href}
+      onClick={onNavigate}
+      aria-current={active ? "page" : undefined}
+      className={cn(
+        "relative flex items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors duration-150",
+        nested ? "h-9" : "h-10",
+        active ? "text-primary-foreground" : "text-muted-foreground hover:bg-ink/[0.04] hover:text-foreground",
+      )}
+    >
+      {/* One pill that travels between items, so the eye follows where you went */}
+      {active && <motion.span layoutId="nav-pill" className="absolute inset-0 rounded-xl bg-primary" transition={snappy} />}
+      <item.icon className={cn("relative shrink-0", nested ? "size-4" : "size-[18px]")} strokeWidth={1.75} />
+      <span className="relative">{item.label}</span>
+    </Link>
+  );
+}
 
 function NavList({ onNavigate }: { onNavigate?: () => void }) {
   const [location] = useLocation();
+  const reduce = useReducedMotion();
+  const activeGroup = GROUPS.find((g) => g.items.some((i) => i.href === location))?.id;
+
+  // Only the group you're in is open. You can open others by hand; moving to a page tidies up again.
+  const [open, setOpen] = useState<Record<string, boolean>>(() => (activeGroup ? { [activeGroup]: true } : {}));
+
+  useEffect(() => {
+    setOpen(activeGroup ? { [activeGroup]: true } : {});
+  }, [activeGroup]);
 
   return (
-    <nav className="space-y-6" aria-label="Main">
-      {NAV.map((group) => (
-        <div key={group.label}>
-          <p className="mb-2 px-3 text-xs font-medium text-muted-foreground/70">{group.label}</p>
-          <ul className="space-y-0.5">
-            {group.items.map((item) => {
-              const active = location === item.href;
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    onClick={onNavigate}
-                    aria-current={active ? "page" : undefined}
-                    className={cn(
-                      "relative flex h-10 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors duration-150",
-                      active ? "text-primary-foreground" : "text-muted-foreground hover:bg-white/[0.04] hover:text-foreground",
-                    )}
-                  >
-                    {/* One pill that travels between items, so the eye follows where you went */}
-                    {active && (
-                      <motion.span
-                        layoutId="nav-pill"
-                        className="absolute inset-0 rounded-xl bg-primary"
-                        transition={snappy}
-                      />
-                    )}
-                    <item.icon className="relative size-[18px] shrink-0" strokeWidth={1.75} />
-                    <span className="relative">{item.label}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ))}
+    <nav className="space-y-1" aria-label="Main">
+      <NavLink item={OVERVIEW} onNavigate={onNavigate} />
+
+      {GROUPS.map((group) => {
+        const isOpen = Boolean(open[group.id]);
+        const holdsActive = group.id === activeGroup;
+        return (
+          <div key={group.id} className="pt-1">
+            <button
+              onClick={() => setOpen((o) => ({ ...o, [group.id]: !isOpen }))}
+              aria-expanded={isOpen}
+              aria-controls={`nav-${group.id}`}
+              className="flex h-10 w-full items-center gap-3 rounded-xl px-3 text-sm font-medium text-muted-foreground transition-colors duration-150 hover:bg-ink/[0.04] hover:text-foreground"
+            >
+              <group.icon className="size-[18px] shrink-0" strokeWidth={1.75} />
+              <span className="flex-1 text-left">{group.label}</span>
+              {!isOpen && holdsActive && <span className="size-1.5 rounded-full bg-primary" aria-hidden="true" />}
+              <ChevronDown
+                className={cn(
+                  "size-4 transition-transform duration-200 ease-[var(--ease-out)] motion-reduce:transition-none",
+                  isOpen ? "rotate-0" : "-rotate-90",
+                )}
+              />
+            </button>
+            {/* Height is the one tolerated layout animation: accordions have no transform equivalent */}
+            <AnimatePresence initial={false}>
+              {isOpen && (
+                <motion.div
+                  id={`nav-${group.id}`}
+                  key="items"
+                  className="overflow-hidden"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: reduce ? 0 : 0.22, ease: easeOut }}
+                >
+                  <ul className="ml-[21px] mt-0.5 space-y-0.5 border-l border-line pl-2.5">
+                    {group.items.map((item) => (
+                      <li key={item.href}>
+                        <NavLink item={item} onNavigate={onNavigate} nested />
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        );
+      })}
     </nav>
+  );
+}
+
+/** Sun/moon pill from the franchise reference. The knob slides; the new theme grows out of the click. */
+function ThemeToggle() {
+  const theme = useTheme();
+  const light = theme === "light";
+  return (
+    <button
+      role="switch"
+      aria-checked={light}
+      aria-label="Light mode"
+      onClick={(e) => {
+        const r = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX || r.left + r.width / 2;
+        const y = e.clientY || r.top + r.height / 2;
+        setTheme(light ? "dark" : "light", { x, y });
+      }}
+      className="pressable relative flex h-10 shrink-0 items-center rounded-full border border-line bg-card p-1"
+    >
+      <span
+        className="absolute left-1 top-1 size-8 rounded-full bg-primary transition-transform duration-300 ease-[var(--ease-in-out)] motion-reduce:transition-none"
+        style={{ transform: light ? "translateX(0)" : "translateX(100%)" }}
+        aria-hidden="true"
+      />
+      <span className={cn("relative grid size-8 place-items-center transition-colors duration-300", light ? "text-primary-foreground" : "text-muted-foreground")}>
+        <Sun className="size-4" />
+      </span>
+      <span className={cn("relative grid size-8 place-items-center transition-colors duration-300", !light ? "text-primary-foreground" : "text-muted-foreground")}>
+        <Moon className="size-4" />
+      </span>
+    </button>
   );
 }
 
@@ -156,7 +260,7 @@ function SyncCard() {
 
   return (
     <div className="relative overflow-hidden rounded-2xl bg-primary p-4 text-primary-foreground">
-      <div className="hatch pointer-events-none absolute inset-0 [--hatch-color:rgb(255_255_255/0.12)]" />
+      <div className="hatch hatch-on-primary pointer-events-none absolute inset-0" />
       <div className="relative">
         <p className="font-display text-[15px] font-semibold leading-tight">Studio payments sheet</p>
         <p className="mt-1 text-xs text-white/75" aria-live="polite">
@@ -195,7 +299,7 @@ function OverdueBell() {
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent align="end" sideOffset={8} className="w-80 rounded-2xl border-line bg-popover p-0">
+      <PopoverContent align="end" sideOffset={8} className="w-80 p-0">
         <div className="border-b border-line px-4 py-3">
           <p className="text-sm font-medium">Overdue</p>
           <p className="text-xs text-muted-foreground">
@@ -207,7 +311,7 @@ function OverdueBell() {
             <li key={e.id}>
               <Link
                 href={`/payments?q=${encodeURIComponent(e.client)}`}
-                className="flex items-center justify-between gap-3 rounded-xl px-2.5 py-2 transition-colors hover:bg-white/[0.04]"
+                className="flex items-center justify-between gap-3 rounded-xl px-2.5 py-2 transition-colors hover:bg-ink/[0.04]"
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm">{e.client}</p>
@@ -249,7 +353,7 @@ function SearchPalette() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="flex h-10 w-full max-w-sm items-center gap-2.5 rounded-xl border border-line bg-card px-3 text-sm text-muted-foreground transition-colors hover:border-white/15"
+        className="flex h-10 w-full max-w-sm items-center gap-2.5 rounded-xl border border-line bg-card px-3 text-sm text-muted-foreground transition-colors hover:border-ink/15"
       >
         <Search className="size-4" />
         <span className="flex-1 truncate text-left">
@@ -307,7 +411,7 @@ function ProfileMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="pressable flex items-center gap-3 rounded-xl border border-line bg-card py-1 pl-1 pr-3 transition-colors hover:border-white/15">
+        <button className="pressable flex items-center gap-3 rounded-xl border border-line bg-card py-1 pl-1 pr-3 transition-colors hover:border-ink/15">
           <Avatar className="size-8 rounded-lg">
             <AvatarImage src={photo} alt="" className="object-cover" />
             <AvatarFallback className="rounded-lg bg-primary text-sm font-semibold text-primary-foreground">
@@ -320,12 +424,12 @@ function ProfileMenu() {
           </span>
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" sideOffset={8} className="w-48 rounded-xl border-line bg-popover">
-        <DropdownMenuItem onSelect={() => fileInputRef.current?.click()} className="gap-2 rounded-lg">
+      <DropdownMenuContent align="end" sideOffset={8} className="w-48">
+        <DropdownMenuItem onSelect={() => fileInputRef.current?.click()}>
           <ImageUp className="size-4" /> Change photo
         </DropdownMenuItem>
-        <DropdownMenuSeparator className="bg-line" />
-        <DropdownMenuItem onSelect={() => logout.mutate()} className="gap-2 rounded-lg text-vermilion focus:text-vermilion">
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={() => logout.mutate()} className="text-vermilion data-[highlighted]:bg-vermilion/10 data-[highlighted]:text-vermilion">
           <LogOut className="size-4" /> Log out
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -352,8 +456,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="scrollbar-none flex-1 overflow-y-auto px-3 pb-4 pt-2">
           <NavList />
         </div>
-        <div className="space-y-2 p-3">
-          <SyncCard />
+        <div className="space-y-1 p-3">
+          <div className="pb-2">
+            <SyncCard />
+          </div>
+          <NavLink item={SETTINGS} />
           <button
             onClick={() => logout.mutate()}
             className="pressable flex h-10 w-full items-center gap-3 rounded-xl px-3 text-sm font-medium text-vermilion/90 transition-colors hover:bg-vermilion/10 hover:text-vermilion"
@@ -378,12 +485,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <Wordmark />
               </SheetTitle>
               <NavList onNavigate={() => setMobileOpen(false)} />
+              <div className="mt-4 border-t border-line pt-3">
+                <NavLink item={SETTINGS} onNavigate={() => setMobileOpen(false)} />
+              </div>
             </SheetContent>
           </Sheet>
 
           <div className="min-w-0 flex-1">
             <SearchPalette />
           </div>
+          <ThemeToggle />
           <OverdueBell />
           <ProfileMenu />
         </header>

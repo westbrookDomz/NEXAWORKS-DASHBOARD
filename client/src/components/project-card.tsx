@@ -53,7 +53,7 @@ export default function ProjectCard({ project, intro, index }: { project: Projec
           </span>
           <span className="tnum font-medium">{progress}%</span>
         </div>
-        <div className="hatch h-2 overflow-hidden rounded-full bg-white/[0.04] [--hatch-color:rgb(255_255_255/0.14)]">
+        <div className="hatch h-2 overflow-hidden rounded-full bg-ink/[0.04] hatch-soft">
           <motion.div
             className={cn("h-full origin-left rounded-full", done ? "bg-mint" : "bg-primary")}
             style={{ width: `${progress}%` }}

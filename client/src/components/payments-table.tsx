@@ -68,7 +68,7 @@ export default function PaymentsTable() {
       <div className="overflow-x-auto">
         <table className="w-full min-w-[760px] text-sm">
           <thead>
-            <tr className="bg-black/25 text-left text-xs text-muted-foreground">
+            <tr className="bg-sunken text-left text-xs text-muted-foreground">
               <th className="py-2.5 pl-5 font-medium lg:pl-6">Issued</th>
               <th className="py-2.5 font-medium">Client</th>
               <th className="py-2.5 font-medium">Project</th>
@@ -87,7 +87,7 @@ export default function PaymentsTable() {
                 </tr>
               ))}
             {rows.map((e) => (
-              <tr key={e.id} className="border-t border-line transition-colors hover:bg-white/[0.02]">
+              <tr key={e.id} className="border-t border-line transition-colors hover:bg-ink/[0.02]">
                 <td className="tnum whitespace-nowrap py-3 pl-5 text-muted-foreground lg:pl-6">{formatDate(e.issued)}</td>
                 <td className="py-3 pr-4 font-medium">{e.client}</td>
                 <td className="max-w-[300px] truncate py-3 pr-4 text-muted-foreground" title={e.project}>
