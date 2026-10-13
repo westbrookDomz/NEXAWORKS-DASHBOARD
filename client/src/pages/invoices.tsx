@@ -4,14 +4,17 @@ import { PageHeader } from "@/components/page-header";
 import { StatusBadge } from "@/components/status-badge";
 import { SearchField, SegmentedFilter } from "@/components/filters";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { useEntries } from "@/hooks/use-entries";
-import { formatDate, formatMoney, PAYMENT_TERMS_DAYS } from "@/lib/finance";
+import { formatDate, formatMoney } from "@/lib/finance";
+import { useSettings } from "@/hooks/use-settings";
 
 const FILTERS = ["All", "Paid", "Pending", "Overdue"] as const;
 type Filter = (typeof FILTERS)[number];
 
 export default function Invoices() {
   const { entries, isLoading } = useEntries();
+  const { overdueDays } = useSettings();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("All");
 
@@ -36,7 +39,7 @@ export default function Invoices() {
     <div className="space-y-6">
       <PageHeader
         title="Invoices"
-        description={`Invoices issued from the studio sheet. Unpaid invoices are overdue ${PAYMENT_TERMS_DAYS} days after issue.`}
+        description={`Invoices issued from the studio sheet. Unpaid invoices are overdue ${overdueDays} days after issue.`}
       />
 
       <section className="panel overflow-hidden">
@@ -91,10 +94,25 @@ export default function Invoices() {
               {!isLoading && rows.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-5 py-14 text-center">
-                    <p className="font-medium">{invoices.length ? "No invoices match." : "No invoices yet."}</p>
+                    <p className="font-medium">
+                      {!invoices.length ? "No invoices yet" : search.trim() ? `No invoices match “${search.trim()}”` : `No ${filter.toLowerCase()} invoices`}
+                    </p>
                     <p className="mt-1 text-sm text-muted-foreground">
                       {invoices.length ? "Try another number, client or status." : "Add an invoice number to a row in the sheet and it will show here."}
                     </p>
+                    {invoices.length > 0 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-4"
+                        onClick={() => {
+                          setSearch("");
+                          setFilter("All");
+                        }}
+                      >
+                        Clear filters
+                      </Button>
+                    )}
                   </td>
                 </tr>
               )}

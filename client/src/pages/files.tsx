@@ -8,8 +8,10 @@ import { Button } from "@/components/ui/button";
 import { useEntries } from "@/hooks/use-entries";
 import { newId } from "@/hooks/use-local-store";
 import { useToast } from "@/hooks/use-toast";
+import { useUndoToast } from "@/hooks/use-undo-toast";
 import { formatBytes, kindOf, listFiles, removeFile, saveFile, type FileKind, type StoredFile } from "@/lib/file-store";
 import { formatDate } from "@/lib/finance";
+import { count } from "@/lib/plural";
 import { easeOut } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
@@ -41,25 +43,25 @@ function FileCard({ file, url, onDelete }: { file: StoredFile; url: string; onDe
     >
       <div className={cn("relative grid aspect-[4/3] place-items-center overflow-hidden", kind !== "Images" && cn("hatch", KIND_TINT[kind]))}>
         {kind === "Images" ? (
-          <img src={url} alt="" className="size-full object-cover" loading="lazy" />
+          <img src={url} alt="" className="img-outline size-full object-cover" loading="lazy" />
         ) : (
           <span className="rounded-lg bg-card px-2.5 py-1 font-display text-sm font-semibold">{extension(file.name)}</span>
         )}
       </div>
       <div className="flex items-start gap-2 p-3.5">
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium" title={file.name}>
+          <p className="line-clamp-2 text-sm font-medium [overflow-wrap:anywhere]" title={file.name}>
             {file.name}
           </p>
           <p className="tnum mt-0.5 text-xs text-muted-foreground">
             {formatBytes(file.size)}, added {formatDate(new Date(file.added), "d MMM")}
           </p>
-          {file.project && <p className="mt-1.5 truncate text-xs text-primary">{file.project}</p>}
+          {file.project && <p className="mt-1.5 break-words text-xs text-primary">{file.project}</p>}
         </div>
         <a
           href={url}
           download={file.name}
-          className="grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-ink/[0.06] hover:text-foreground"
+          className="icon-btn hover:bg-ink/[0.06] hover:text-foreground"
           aria-label={`Download ${file.name}`}
           title="Download"
         >
@@ -67,7 +69,7 @@ function FileCard({ file, url, onDelete }: { file: StoredFile; url: string; onDe
         </a>
         <button
           onClick={onDelete}
-          className="grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-vermilion/10 hover:text-vermilion"
+          className="icon-btn hover:bg-vermilion/10 hover:text-vermilion"
           aria-label={`Delete ${file.name}`}
           title="Delete"
         >
@@ -81,6 +83,7 @@ function FileCard({ file, url, onDelete }: { file: StoredFile; url: string; onDe
 export default function Files() {
   const { entries } = useEntries();
   const { toast } = useToast();
+  const undoToast = useUndoToast();
   const inputRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<StoredFile[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -121,8 +124,8 @@ export default function Files() {
     await refresh();
     toast(
       rejected
-        ? { variant: "destructive", title: `${rejected} file${rejected > 1 ? "s" : ""} too large`, description: "Files can be up to 50 MB." }
-        : { title: `Added ${accepted.length} file${accepted.length > 1 ? "s" : ""}`, description: project ? `Linked to ${project}.` : undefined },
+        ? { variant: "destructive", title: count(rejected, { one: "# file is over 50 MB", other: "# files are over 50 MB" }), description: "Compress them or split them into smaller files, then add them again." }
+        : { title: count(accepted.length, { one: "Added # file", other: "Added # files" }), description: project ? `Linked to ${project}.` : undefined },
     );
   };
 
@@ -217,15 +220,35 @@ export default function Files() {
                 file={f}
                 url={urls.get(f.id)!}
                 onDelete={async () => {
+                  // The deleted file stays in memory long enough to be put back.
                   await removeFile(f.id);
                   refresh();
+                  undoToast(`Deleted ${f.name}`, async () => {
+                    await saveFile(f);
+                    refresh();
+                  });
                 }}
               />
             ))}
           </AnimatePresence>
         </ul>
       )}
-      {files.length > 0 && shown.length === 0 && <p className="text-center text-sm text-muted-foreground">No files match.</p>}
+      {files.length > 0 && shown.length === 0 && (
+        <div className="py-6 text-center">
+          <p className="text-sm text-muted-foreground">{q ? `No files match “${search.trim()}”` : `No ${filter.toLowerCase()} yet`}</p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-3"
+            onClick={() => {
+              setSearch("");
+              setFilter("All");
+            }}
+          >
+            Clear filters
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

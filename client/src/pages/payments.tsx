@@ -4,6 +4,7 @@ import StatsCard from "@/components/stats-card";
 import { PageHeader } from "@/components/page-header";
 import { useEntries } from "@/hooks/use-entries";
 import { formatMoney, sum } from "@/lib/finance";
+import { count } from "@/lib/plural";
 
 const money = (n: number) => formatMoney(n);
 
@@ -16,9 +17,9 @@ export default function Payments() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Payments" description="What each client was billed, what they've paid and what's left." />
+      <PageHeader title="Payments" description="What each client was billed, what they’ve paid and what’s left." />
       <div className="space-y-3">
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           <StatsCard title="Billed" value={billed} format={money} icon={<Receipt />} hue="primary" note={`${entries.length} jobs on the sheet`} />
           <StatsCard title="Collected" value={collected} format={money} icon={<Wallet />} hue="mint" note={`${share}% of everything billed`} />
           <StatsCard
@@ -27,7 +28,7 @@ export default function Payments() {
             format={money}
             icon={<Hourglass />}
             hue="amber"
-            note={`${entries.filter((e) => e.balance > 0).length} jobs still owe money`}
+            note={count(entries.filter((e) => e.balance > 0).length, { one: "# job has a balance", other: "# jobs have a balance" })}
           />
         </div>
         <PaymentsTable />

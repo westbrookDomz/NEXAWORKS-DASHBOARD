@@ -8,6 +8,7 @@ import { useEntries } from "@/hooks/use-entries";
 import { useIntro } from "@/hooks/use-intro";
 import { useLocalStore } from "@/hooks/use-local-store";
 import { formatMoney, toNumber, type Entry } from "@/lib/finance";
+import { count } from "@/lib/plural";
 import { easeOut } from "@/lib/motion";
 
 /** Services the studio sells, matched from project titles on the sheet. First match wins. */
@@ -72,7 +73,7 @@ export default function Pricing() {
         description="What the studio has charged for each kind of work, from every job on the sheet. Set a list price to quote from."
       />
 
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <StatsCard title="Discounts given" value={totalDiscount} format={(n) => formatMoney(n)} icon={<Scissors />} hue="amber" note="Taken off quoted prices" intro={intro} />
         <StatsCard
           title="Average discount"
@@ -94,7 +95,7 @@ export default function Pricing() {
         />
       </div>
 
-      <div className="grid gap-3 xl:grid-cols-12">
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-12">
         <section className="panel overflow-hidden xl:col-span-8" aria-labelledby="rates-title">
           <div className="flex flex-wrap items-end justify-between gap-3 p-5 pb-4 lg:px-6">
             <div>
@@ -122,7 +123,7 @@ export default function Pricing() {
                 <thead>
                   <tr className="bg-sunken text-left text-xs text-muted-foreground">
                     <th className="py-2.5 pl-5 font-medium lg:pl-6">Service</th>
-                    <th className="w-[38%] py-2.5 font-medium">What you've charged</th>
+                    <th className="w-[38%] py-2.5 font-medium">What you’ve charged</th>
                     <th className="py-2.5 pl-6 text-right font-medium">Avg discount</th>
                     <th className="py-2.5 pl-6 pr-5 text-right font-medium lg:pr-6">List price</th>
                   </tr>
@@ -135,7 +136,7 @@ export default function Pricing() {
                         <td className="py-3.5 pl-5 lg:pl-6">
                           <p className="font-medium">{s.label}</p>
                           <p className="tnum text-xs text-muted-foreground">
-                            {s.jobs.length} {s.jobs.length === 1 ? "job" : "jobs"}, avg {formatMoney(s.avg)}
+                            {count(s.jobs.length, { one: "# job", other: "# jobs" })}, average {formatMoney(s.avg)}
                           </p>
                         </td>
                         <td className="py-3.5">
@@ -158,7 +159,7 @@ export default function Pricing() {
                               />
                             ) : null}
                           </div>
-                          <div className="tnum mt-1.5 flex justify-between text-[11px] text-muted-foreground">
+                          <div className="tnum mt-1.5 flex justify-between text-xs text-muted-foreground">
                             <span>{formatMoney(s.min)}</span>
                             <span>{formatMoney(s.max)}</span>
                           </div>
@@ -206,15 +207,15 @@ export default function Pricing() {
               return (
                 <li key={e.id}>
                   <div className="flex items-baseline justify-between gap-3">
-                    <p className="truncate text-sm font-medium">{e.client}</p>
+                    <p className="break-words text-sm font-medium">{e.client}</p>
                     <p className="tnum shrink-0 text-sm text-amber">−{formatMoney(toNumber(e.raw.discount))}</p>
                   </div>
-                  <p className="truncate text-xs text-muted-foreground">{e.project}</p>
+                  <p className="break-words text-xs text-muted-foreground">{e.project}</p>
                   {/* Agreed (solid) inside quoted (hatched): the hatched end is what was given away */}
                   <div className="hatch hatch-amber mt-2 h-2 overflow-hidden rounded-full bg-amber/10">
                     <div className="h-full rounded-full bg-primary" style={{ width: `${charged ? (agreed / charged) * 100 : 0}%` }} />
                   </div>
-                  <p className="tnum mt-1 text-[11px] text-muted-foreground">
+                  <p className="tnum mt-1 text-xs text-muted-foreground">
                     Quoted {formatMoney(charged)}, agreed {formatMoney(agreed)}
                   </p>
                 </li>

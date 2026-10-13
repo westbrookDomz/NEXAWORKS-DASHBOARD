@@ -8,6 +8,16 @@
   --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Bricolage Grotesque", "Instrument Sans", ui-sans-serif, sans-serif;
 
+  /* Type scale for display roles; UI text uses Tailwind's xs/sm/base/lg/xl */
+  --text-title: 1.75rem; /* page titles, 28px */
+  --text-title--line-height: 1.15;
+  --text-display: 2.5rem; /* sign-in headline, 40px */
+  --text-display--line-height: 1.05;
+  --text-figure: 1.875rem; /* KPI figures, 30px */
+  --text-figure--line-height: 1;
+  --text-figure-xl: 2.75rem; /* gauge and rating figures, 44px */
+  --text-figure-xl--line-height: 1;
+
   /* Radius hierarchy: panel > control > chip */
   --radius-sm: 0.5rem;
   --radius-md: 0.75rem;
@@ -123,25 +133,36 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased selection:bg-primary selection:text-primary-foreground;
-    font-feature-settings: "tnum" 0;
   }
 
   h1,
   h2,
   h3,
   h4 {
-    @apply font-display tracking-tight text-foreground;
-    font-optical-sizing: auto;
+    @apply font-display text-foreground;
+    letter-spacing: -0.01em;
+    /* Longhand on purpose: the text-wrap shorthand would also reset nowrap set by a parent */
+    text-wrap-style: balance;
   }
 
   h1 {
-    @apply text-[28px] leading-[1.15] font-semibold;
+    @apply text-title font-semibold;
+    letter-spacing: -0.02em;
   }
   h2 {
     @apply text-xl font-semibold;
   }
   h3 {
     @apply text-base font-semibold;
+  }
+
+  p {
+    text-wrap-style: pretty;
+  }
+
+  /* A grid child holding a wide table scrolls inside itself instead of widening the page */
+  .grid > * {
+    min-width: 0;
   }
 
   :focus-visible {
@@ -168,7 +189,7 @@
   }
 
   .field {
-    @apply h-11 w-full rounded-xl border border-line bg-raised px-3.5 text-sm text-foreground outline-none placeholder:text-muted-foreground/70;
+    @apply h-11 w-full rounded-xl border border-line bg-raised px-3.5 text-base text-foreground outline-none placeholder:text-muted-foreground/70 sm:text-sm;
     transition: border-color 150ms ease, box-shadow 150ms ease;
   }
   .field:focus-visible {
@@ -176,16 +197,44 @@
     border-color: color-mix(in srgb, var(--primary) 60%, transparent);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);
   }
+  /* Number fields carry their unit as text; the browser's spinner arrows add noise */
+  .field[type="number"] {
+    -moz-appearance: textfield;
+  }
+  .field[type="number"]::-webkit-inner-spin-button,
+  .field[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
   .field[aria-invalid="true"] {
     border-color: color-mix(in srgb, var(--vermilion) 50%, transparent);
   }
 
   /* Pressable feedback: every button confirms the press */
   .pressable {
-    transition: transform 160ms var(--ease-out), background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+    transition: transform 150ms ease-out, background-color 150ms ease, color 150ms ease, border-color 150ms ease;
   }
   .pressable:active:not(:disabled) {
-    transform: scale(0.97);
+    transform: scale(0.96);
+  }
+
+  /* Small icon actions (delete, download, clear): 32px with a pointer, 44px on touch screens */
+  .icon-btn {
+    @apply grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors duration-150;
+  }
+  @media (pointer: coarse) {
+    .icon-btn {
+      @apply size-11;
+    }
+  }
+
+  /* Content images get a hairline so light edges don't bleed into the surface */
+  .img-outline {
+    outline: 1px solid oklch(0 0 0 / 0.1);
+    outline-offset: -1px;
+  }
+  .dark .img-outline {
+    outline-color: oklch(1 0 0 / 0.1);
   }
 }
 
@@ -230,6 +279,12 @@
 }
 
 /* Error feedback on the sign-in form: short, small amplitude */
+/* While the theme flips, colour transitions would all fire at once and smear; lib/theme.ts toggles this */
+.theme-switching,
+.theme-switching * {
+  transition: none !important;
+}
+
 /* Theme switch: a circle grows from the toggle (see lib/theme.ts). Default cross-fade is turned off. */
 ::view-transition-old(root),
 ::view-transition-new(root) {

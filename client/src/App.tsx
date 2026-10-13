@@ -8,7 +8,6 @@ import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
 import Invoices from "@/pages/invoices";
 import Payments from "@/pages/payments";
-import Placeholder from "@/pages/placeholder";
 import Projects from "@/pages/projects";
 import Reports from "@/pages/reports";
 import Login from "@/pages/login";
@@ -17,6 +16,7 @@ import Tasks from "@/pages/tasks";
 import Files from "@/pages/files";
 import Pricing from "@/pages/pricing";
 import Reviews from "@/pages/reviews";
+import Settings from "@/pages/settings";
 import { useAuth } from "@/hooks/use-auth";
 
 import DashboardLayout from "@/components/dashboard-layout";
@@ -35,7 +35,7 @@ function Router() {
         <Route path="/files" component={Files} />
         <Route path="/pricing" component={Pricing} />
         <Route path="/reviews" component={Reviews} />
-        <Route path="/settings">{() => <Placeholder title="Settings" />}</Route>
+        <Route path="/settings" component={Settings} />
         <Route component={NotFound} />
       </Switch>
     </DashboardLayout>

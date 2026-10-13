@@ -2,12 +2,14 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, requireAuth } from "./auth";
+import { registerSettingsRoutes } from "./settings-routes";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
   setupAuth(app);
+  registerSettingsRoutes(app);
 
   // Payment routes
   app.get("/api/payments", requireAuth, async (_req, res) => {

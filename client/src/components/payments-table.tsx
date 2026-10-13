@@ -90,7 +90,7 @@ export default function PaymentsTable() {
               <tr key={e.id} className="border-t border-line transition-colors hover:bg-ink/[0.02]">
                 <td className="tnum whitespace-nowrap py-3 pl-5 text-muted-foreground lg:pl-6">{formatDate(e.issued)}</td>
                 <td className="py-3 pr-4 font-medium">{e.client}</td>
-                <td className="max-w-[300px] truncate py-3 pr-4 text-muted-foreground" title={e.project}>
+                <td className="max-w-[300px] break-words py-3 pr-4 text-muted-foreground">
                   {e.project}
                 </td>
                 <td className="py-3">

@@ -57,3 +57,13 @@ export function formatBytes(n: number): string {
   }
   return `${v < 10 ? v.toFixed(1) : Math.round(v)} ${units[i]}`;
 }
+
+/** Deletes every stored file (Settings → Your data → Clear this browser's data). */
+export function clearFiles(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.deleteDatabase(DB_NAME);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+    req.onblocked = () => resolve();
+  });
+}

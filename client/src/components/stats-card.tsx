@@ -7,11 +7,11 @@ import { cn } from "@/lib/utils";
 
 export type Hue = "primary" | "violet" | "amber" | "mint";
 
-const HUE: Record<Hue, { solid: string; hatch: string; text: string }> = {
-  primary: { solid: "bg-primary", hatch: "hatch-primary bg-primary/10", text: "text-primary" },
-  violet: { solid: "bg-violet", hatch: "hatch-violet bg-violet/10", text: "text-violet" },
-  amber: { solid: "bg-amber", hatch: "hatch-amber bg-amber/10", text: "text-amber" },
-  mint: { solid: "bg-mint", hatch: "hatch-mint bg-mint/10", text: "text-mint" },
+const HUE: Record<Hue, { solid: string; hatch: string }> = {
+  primary: { solid: "bg-primary", hatch: "hatch-primary bg-primary/10" },
+  violet: { solid: "bg-violet", hatch: "hatch-violet bg-violet/10" },
+  amber: { solid: "bg-amber", hatch: "hatch-amber bg-amber/10" },
+  mint: { solid: "bg-mint", hatch: "hatch-mint bg-mint/10" },
 };
 
 interface StatsCardProps {
@@ -47,22 +47,22 @@ export default function StatsCard({
   const good = delta == null ? null : goodWhen === "up" ? delta >= 0 : delta <= 0;
 
   return (
-    <div className="panel flex flex-col p-5">
+    <div className="panel flex flex-col p-4 sm:p-5">
       <div className="flex items-start justify-between gap-3">
         <p className="text-sm text-muted-foreground">{title}</p>
         {icon && (
-          <div className={cn("grid size-9 shrink-0 place-items-center rounded-[10px] bg-raised [&_svg]:size-[18px]", h.text)}>
+          <div className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-raised text-muted-foreground [&_svg]:size-[18px]">
             {icon}
           </div>
         )}
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-x-2.5 gap-y-1">
+      <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1 sm:mt-3">
         <AnimatedNumber
           value={value}
           format={format}
           from={intro ? 0 : value}
-          className="figure text-[30px] font-semibold leading-none text-foreground"
+          className="figure text-2xl font-semibold leading-none text-foreground sm:text-figure"
         />
         {delta != null && (
           <span
@@ -77,7 +77,7 @@ export default function StatsCard({
         )}
       </div>
 
-      <div className="mt-auto flex items-end justify-between gap-4 pt-5">
+      <div className="mt-auto flex items-end justify-between gap-4 pt-3 sm:pt-5">
         {note && <p className="text-xs leading-snug text-muted-foreground">{note}</p>}
         {spark && spark.length > 0 && (
           <div className="flex h-9 shrink-0 items-end gap-1" aria-hidden="true">

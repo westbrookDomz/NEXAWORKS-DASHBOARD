@@ -46,7 +46,7 @@ export function ClientCombobox({
                 {options.map((o) => (
                   <CommandItem key={o} value={o} onSelect={() => pick(o)}>
                     <span className="grid size-6 place-items-center rounded-md bg-raised font-display text-xs font-semibold">{o.charAt(0).toUpperCase()}</span>
-                    <span className="flex-1 truncate">{o}</span>
+                    <span className="flex-1 break-words">{o}</span>
                     {value === o && <Check className="text-primary" strokeWidth={2.5} />}
                   </CommandItem>
                 ))}

@@ -41,12 +41,12 @@ export function NexaMark({
   );
 }
 
-export function Wordmark({ className }: { className?: string }) {
+export function Wordmark({ className, name = "Nexaworks" }: { className?: string; name?: string }) {
   return (
     <div className={className}>
       <div className="flex items-center gap-2.5">
         <NexaMark className="h-[18px] w-auto text-primary" />
-        <span className="font-display text-[17px] font-semibold tracking-tight text-foreground">Nexaworks</span>
+        <span className="truncate font-display text-lg font-semibold tracking-tight text-foreground">{name}</span>
       </div>
     </div>
   );

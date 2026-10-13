@@ -4,6 +4,7 @@ import { queryClient } from "@/lib/queryClient";
 export interface AuthSession {
   /** False when the server has no credentials set; sign-in can't succeed until it does. */
   configured: boolean;
+  studioName?: string;
   user: string | null;
 }
 
@@ -44,18 +45,20 @@ export function useAuth() {
       await fetch("/api/auth/logout", { method: "POST", credentials: "include" }).catch(() => {});
     },
     onSuccess: () => {
-      queryClient.setQueryData<AuthSession>(SESSION_KEY, (s) => ({ configured: s?.configured ?? true, user: null }));
+      queryClient.setQueryData<AuthSession>(SESSION_KEY, (s) => ({ ...s, configured: s?.configured ?? true, user: null }));
       queryClient.removeQueries({ queryKey: ["/api/payments"] });
+      queryClient.removeQueries({ queryKey: ["/api/settings"] });
     },
   });
 
   /** Called after the success animation finishes, so the dashboard mounts once the hand-off is done. */
   const completeLogin = (user: string) =>
-    queryClient.setQueryData<AuthSession>(SESSION_KEY, (s) => ({ configured: s?.configured ?? true, user }));
+    queryClient.setQueryData<AuthSession>(SESSION_KEY, (s) => ({ ...s, configured: s?.configured ?? true, user }));
 
   return {
     user: session.data?.user ?? null,
     configured: session.data?.configured ?? true,
+    studioName: session.data?.studioName ?? "Nexaworks",
     isLoading: session.isLoading,
     login,
     logout,

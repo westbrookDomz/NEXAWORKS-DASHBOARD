@@ -68,7 +68,7 @@ const DropdownMenuContent = React.forwardRef<
       className={cn(
         menuSurface,
         menuMotion,
-        "max-h-[var(--radix-dropdown-menu-content-available-height)] min-w-[8rem] overflow-y-auto overflow-x-hidden origin-(--radix-dropdown-menu-content-transform-origin)",
+        "max-h-[var(--radix-dropdown-menu-content-available-height)] min-w-[8rem] overflow-y-auto overscroll-contain overflow-x-hidden origin-(--radix-dropdown-menu-content-transform-origin)",
         className
       )}
       {...props}

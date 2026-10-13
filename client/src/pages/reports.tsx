@@ -66,7 +66,7 @@ export default function Reports() {
       />
 
       <div className="space-y-3">
-        <div className="grid gap-3 xl:grid-cols-12">
+        <div className="grid grid-cols-1 gap-3 xl:grid-cols-12">
           <section className="panel p-5 lg:p-6 xl:col-span-8" aria-labelledby="trend-title">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <h2 id="trend-title" className="text-lg">Billed and collected</h2>
@@ -144,7 +144,7 @@ export default function Reports() {
               {clients.slice(0, 6).map((c, i) => (
                 <li key={c.name}>
                   <div className="flex items-baseline justify-between gap-3 text-sm">
-                    <span className="truncate">{c.name}</span>
+                    <span className="break-words">{c.name}</span>
                     <span className="tnum shrink-0 text-muted-foreground">{formatMoney(c.billed)}</span>
                   </div>
                   <div className="mt-1.5 h-2.5" style={{ width: `${(c.billed / maxClient) * 100}%` }}>
