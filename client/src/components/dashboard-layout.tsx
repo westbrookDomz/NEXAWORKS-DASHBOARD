@@ -50,6 +50,8 @@ import { Wordmark } from "@/components/brand/nexa-mark";
 import { useEntries } from "@/hooks/use-entries";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
+import { useSettings } from "@/hooks/use-settings";
+import { squareThumbnail } from "@/lib/image";
 import { formatMoney, formatDate } from "@/lib/finance";
 import { easeOut, snappy } from "@/lib/motion";
 import { cn } from "@/lib/utils";
@@ -118,7 +120,7 @@ function NavLink({ item, onNavigate, nested }: { item: NavItem; onNavigate?: () 
       aria-current={active ? "page" : undefined}
       className={cn(
         "relative flex items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors duration-150",
-        nested ? "h-9" : "h-10",
+        nested ? "h-9 pointer-coarse:h-11" : "h-10 pointer-coarse:h-11",
         active ? "text-primary-foreground" : "text-muted-foreground hover:bg-ink/[0.04] hover:text-foreground",
       )}
     >
@@ -237,7 +239,7 @@ function SyncCard() {
     const result = await refetch();
     toast(
       result.isError
-        ? { variant: "destructive", title: "Sync failed", description: "The sheet couldn't be reached. Check the connection and try again." }
+        ? { variant: "destructive", title: "Sync failed", description: "The sheet couldn’t be reached. Check the connection and try again." }
         : { title: "Payments synced", description: `${result.data?.length ?? 0} rows read from the studio sheet.` },
     );
   };
@@ -259,10 +261,10 @@ function SyncCard() {
         : "Not synced yet";
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-primary p-4 text-primary-foreground">
+    <div className="relative overflow-hidden rounded-xl bg-primary p-4 text-primary-foreground">
       <div className="hatch hatch-on-primary pointer-events-none absolute inset-0" />
       <div className="relative">
-        <p className="font-display text-[15px] font-semibold leading-tight">Studio payments sheet</p>
+        <p className="font-display text-base font-semibold leading-tight">Studio payments sheet</p>
         <p className="mt-1 text-xs text-white/75" aria-live="polite">
           {status}
         </p>
@@ -271,7 +273,7 @@ function SyncCard() {
           disabled={isFetching}
           className="pressable mt-4 flex h-8 w-full items-center justify-between rounded-lg border-t border-white/25 pt-3 text-left text-sm font-medium disabled:opacity-80"
         >
-          {isFetching ? "Syncing" : "Sync now"}
+          {isFetching ? "Syncing" : "Sync sheet"}
           <RefreshCw className={cn("size-4", isFetching && "animate-spin")} />
         </button>
       </div>
@@ -281,6 +283,7 @@ function SyncCard() {
 
 function OverdueBell() {
   const { entries } = useEntries();
+  const { overdueDays } = useSettings();
   const overdue = useMemo(
     () => entries.filter((e) => e.state === "Overdue").sort((a, b) => b.balance - a.balance),
     [entries],
@@ -303,18 +306,18 @@ function OverdueBell() {
         <div className="border-b border-line px-4 py-3">
           <p className="text-sm font-medium">Overdue</p>
           <p className="text-xs text-muted-foreground">
-            {overdue.length ? "Unpaid more than 14 days after issue." : "Nothing is overdue."}
+            {overdue.length ? `Unpaid more than ${overdueDays} days after issue.` : "Nothing is overdue."}
           </p>
         </div>
-        <ul className="max-h-72 overflow-auto p-1.5">
+        <ul className="max-h-72 overflow-auto overscroll-contain p-1.5">
           {overdue.map((e) => (
             <li key={e.id}>
               <Link
                 href={`/payments?q=${encodeURIComponent(e.client)}`}
-                className="flex items-center justify-between gap-3 rounded-xl px-2.5 py-2 transition-colors hover:bg-ink/[0.04]"
+                className="flex items-center justify-between gap-3 rounded-md px-2.5 py-2 transition-colors hover:bg-ink/[0.04]"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-sm">{e.client}</p>
+                  <p className="break-words text-sm">{e.client}</p>
                   <p className="text-xs text-muted-foreground">Due {formatDate(e.due, "d MMM")}</p>
                 </div>
                 <span className="tnum shrink-0 text-sm font-medium text-vermilion">{formatMoney(e.balance)}</span>
@@ -353,14 +356,13 @@ function SearchPalette() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="flex h-10 w-full max-w-sm items-center gap-2.5 rounded-xl border border-line bg-card px-3 text-sm text-muted-foreground transition-colors hover:border-ink/15"
+        aria-label="Search pages and clients"
+        className="pressable flex size-10 items-center justify-center gap-2.5 rounded-xl border border-line bg-card text-sm text-muted-foreground transition-colors hover:border-ink/15 sm:h-10 sm:w-full sm:max-w-sm sm:justify-start sm:px-3"
       >
-        <Search className="size-4" />
-        <span className="flex-1 truncate text-left">
-          <span className="sm:hidden">Search</span>
-          <span className="hidden sm:inline">Search pages and clients</span>
-        </span>
-        <kbd className="hidden rounded-md border border-line bg-raised px-1.5 py-0.5 font-sans text-[11px] sm:inline">⌘K</kbd>
+        <Search className="size-4 shrink-0" />
+        {/* Phones get an icon button; the label needs room to read */}
+        <span className="hidden flex-1 truncate text-left sm:block">Search pages and clients</span>
+        <kbd className="hidden rounded-md border border-line bg-raised px-1.5 py-0.5 font-sans text-xs sm:inline">⌘K</kbd>
       </button>
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput placeholder="Go to a page or find a client" />
@@ -392,35 +394,46 @@ function SearchPalette() {
 
 function ProfileMenu() {
   const { user, logout } = useAuth();
+  const { data: settings, saveProfile } = useSettings();
+  const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [photo, setPhoto] = useState(() => localStorage.getItem("profile_image") || profileImage);
-  const name = user || "Dominion";
+  const profile = settings?.profile;
+  const name = profile?.displayName || user || "";
+  const photo = profile?.photo || profileImage;
 
-  const onPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64 = reader.result as string;
-      setPhoto(base64);
-      localStorage.setItem("profile_image", base64);
-    };
-    reader.readAsDataURL(file);
+  const savePhoto = async (source: Blob | string) => {
+    if (!profile) return;
+    try {
+      const thumb = await squareThumbnail(source);
+      await saveProfile.mutateAsync({ ...profile, displayName: name, photo: thumb });
+      toast({ title: "Photo updated" });
+    } catch (err) {
+      toast({ variant: "destructive", title: "Couldn’t update your photo", description: err instanceof Error ? err.message : undefined });
+    }
   };
+
+  // One-time move: a photo saved only in this browser goes to the server so every device shows it.
+  useEffect(() => {
+    const local = localStorage.getItem("profile_image");
+    if (!profile || !local) return;
+    localStorage.removeItem("profile_image");
+    if (!profile.photo) savePhoto(local);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [Boolean(profile)]);
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="pressable flex items-center gap-3 rounded-xl border border-line bg-card py-1 pl-1 pr-3 transition-colors hover:border-ink/15">
+        <button className="pressable flex items-center gap-3 rounded-xl border border-line bg-card py-1 pl-1 pr-3 transition-colors hover:border-ink/15" aria-label="Account menu">
           <Avatar className="size-8 rounded-lg">
-            <AvatarImage src={photo} alt="" className="object-cover" />
+            <AvatarImage src={photo} alt="" className="img-outline rounded-lg object-cover" />
             <AvatarFallback className="rounded-lg bg-primary text-sm font-semibold text-primary-foreground">
               {name.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <span className="hidden text-left sm:block">
             <span className="block text-sm font-medium leading-tight text-foreground">{name}</span>
-            <span className="block text-xs leading-tight text-muted-foreground">Admin</span>
+            <span className="block text-xs leading-tight text-muted-foreground">{profile?.role ?? "Admin"}</span>
           </span>
         </button>
       </DropdownMenuTrigger>
@@ -428,32 +441,47 @@ function ProfileMenu() {
         <DropdownMenuItem onSelect={() => fileInputRef.current?.click()}>
           <ImageUp className="size-4" /> Change photo
         </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/settings">
+            <Settings className="size-4" /> Settings
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => logout.mutate()} className="text-vermilion data-[highlighted]:bg-vermilion/10 data-[highlighted]:text-vermilion">
           <LogOut className="size-4" /> Log out
         </DropdownMenuItem>
       </DropdownMenuContent>
-      <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={onPhoto} />
+      <input
+        type="file"
+        ref={fileInputRef}
+        className="hidden"
+        accept="image/jpeg,image/png,image/webp"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) savePhoto(file);
+          e.target.value = "";
+        }}
+      />
     </DropdownMenu>
   );
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
-  const { logout } = useAuth();
+  const { logout, studioName } = useAuth();
   const reduce = useReducedMotion();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <div className="flex h-dvh gap-3 overflow-hidden bg-background p-3 text-foreground">
       {/* Sidebar */}
-      <aside className="panel hidden w-[248px] shrink-0 flex-col md:flex">
+      <aside className="panel hidden w-[248px] shrink-0 flex-col rounded-3xl md:flex">
         <div className="flex h-16 items-center px-5">
           <Link href="/" aria-label="Overview">
-            <Wordmark />
+            <Wordmark name={studioName} />
           </Link>
         </div>
-        <div className="scrollbar-none flex-1 overflow-y-auto px-3 pb-4 pt-2">
+        <div className="scrollbar-none flex-1 overflow-y-auto overscroll-contain px-3 pb-4 pt-2">
           <NavList />
         </div>
         <div className="space-y-1 p-3">
@@ -482,7 +510,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </SheetTrigger>
             <SheetContent side="left" className="w-[280px] border-line bg-card p-3">
               <SheetTitle className="flex h-14 items-center px-2">
-                <Wordmark />
+                <Wordmark name={studioName} />
               </SheetTitle>
               <NavList onNavigate={() => setMobileOpen(false)} />
               <div className="mt-4 border-t border-line pt-3">

@@ -1,7 +1,7 @@
 import { addDays, format, isValid, parse, startOfMonth, subMonths, isSameMonth } from "date-fns";
 import type { Payment } from "@shared/schema";
 
-/** Days after issue before an unpaid invoice counts as overdue. */
+/** Default days after issue before an unpaid invoice counts as overdue (Settings can change it). */
 export const PAYMENT_TERMS_DAYS = 14;
 
 /** Sheet amounts arrive as strings like "9,500.00" or "D9,500.00". */
@@ -53,12 +53,12 @@ export interface Entry {
 }
 
 /** Normalises a sheet row once so every screen agrees on totals and status. */
-export function toEntry(p: Payment, now = new Date()): Entry {
+export function toEntry(p: Payment, termsDays = PAYMENT_TERMS_DAYS, now = new Date()): Entry {
   const total = toNumber(p.totalAmount);
   const paid = toNumber(p.amountPaid);
   const balance = toNumber(p.balance);
   const issued = parseSheetDate(p.date);
-  const due = issued ? addDays(issued, PAYMENT_TERMS_DAYS) : null;
+  const due = issued ? addDays(issued, termsDays) : null;
   const state: PaymentState = balance <= 0 ? "Paid" : due && now > due ? "Overdue" : "Pending";
   const invoiceNo = p.invoiceNo && /\d/.test(p.invoiceNo) ? p.invoiceNo.trim() : null;
 

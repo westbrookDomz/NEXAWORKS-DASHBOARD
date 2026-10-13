@@ -12,7 +12,7 @@ const PREVIEW_BARS = [0.42, 0.3, 0.58, 0.46, 0.72, 0.9];
 type Phase = "idle" | "submitting" | "success";
 
 export default function Login() {
-  const { login, completeLogin, configured } = useAuth();
+  const { login, completeLogin, configured, studioName } = useAuth();
   const reduce = useReducedMotion();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -22,10 +22,11 @@ export default function Login() {
   const [shakeKey, setShakeKey] = useState(0);
   const passwordRef = useRef<HTMLInputElement>(null);
 
+  // Staged entrance: title, description, fields, action, 100ms apart. Reduced motion keeps only the fade.
   const rise = (i: number) => ({
-    initial: { opacity: 0, transform: reduce ? "translateY(0px)" : "translateY(8px)" },
-    animate: { opacity: 1, transform: "translateY(0px)" },
-    transition: { duration: 0.5, delay: 0.25 + i * STAGGER, ease: easeOut },
+    initial: reduce ? { opacity: 0 } : { opacity: 0, filter: "blur(4px)", transform: "translateY(12px)" },
+    animate: { opacity: 1, filter: "blur(0px)", transform: "translateY(0px)" },
+    transition: { duration: 0.3, delay: 0.25 + i * 0.1, ease: easeOut },
   });
 
   async function onSubmit(e: React.FormEvent) {
@@ -63,14 +64,14 @@ export default function Login() {
         <div className="hatch pointer-events-none absolute inset-0 opacity-[0.35] hatch-faint" />
 
         <div className="relative flex items-center gap-3 text-sm text-muted-foreground">
-          <span className="font-display text-base font-semibold text-foreground">Nexaworks</span>
+          <span className="font-display text-base font-semibold text-foreground">{studioName}</span>
           <span className="h-4 w-px bg-ink/15" />
           DesignBoard Pro
         </div>
 
         <div className="relative">
           <NexaMark animated delay={0.1} className="h-auto w-[min(360px,70%)] text-primary" />
-          <p className="mt-10 max-w-[26ch] font-display text-[40px] font-semibold leading-[1.05] tracking-[-0.03em] text-foreground">
+          <p className="mt-10 max-w-[26ch] font-display text-display font-semibold tracking-[-0.02em] text-foreground">
             Every invoice, payment and project on one board.
           </p>
         </div>
@@ -102,7 +103,7 @@ export default function Login() {
             <NexaMark animated className="h-7 w-auto text-primary" />
           </motion.div>
 
-          <motion.h1 {...rise(0)} className="text-[28px]">
+          <motion.h1 {...rise(0)} className="text-title">
             Sign in
           </motion.h1>
           <motion.p {...rise(1)} className="mt-2 text-sm text-muted-foreground">
@@ -144,7 +145,7 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((s) => !s)}
-                  className="absolute right-1.5 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-lg text-muted-foreground transition-colors hover:text-foreground"
+                  className="icon-btn absolute right-1.5 top-1/2 -translate-y-1/2 hover:text-foreground pointer-coarse:size-9"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -211,7 +212,7 @@ export default function Login() {
               role="status"
               className="mt-6 rounded-xl border border-vermilion/25 bg-vermilion/[0.06] p-3 text-xs leading-relaxed text-vermilion"
             >
-              Sign-in isn't set up on this server yet. Add APP_USERNAME and APP_PASSWORD to .env, then restart it.
+              Sign-in isn’t set up on this server yet. Add APP_USERNAME and APP_PASSWORD to .env, then restart it.
             </motion.p>
           )}
         </div>

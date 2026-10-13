@@ -53,7 +53,7 @@ export default function BillingBars({ entries, intro }: { entries: Entry[]; intr
               <span className="size-2.5 rounded-[3px] bg-primary" /> Collected
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="hatch size-2.5 rounded-[3px] bg-primary/15 hatch-primary" /> Still owed
+              <span className="hatch size-2.5 rounded-[3px] bg-primary/15 hatch-primary" /> Outstanding
             </span>
           </div>
         </div>
@@ -83,7 +83,7 @@ export default function BillingBars({ entries, intro }: { entries: Entry[]; intr
 
       <div className="mt-2 flex min-h-[320px] flex-1 gap-3">
         {/* Y axis, positioned on the same scale as the gridlines */}
-        <div className="w-10 shrink-0 pb-7 pt-14 text-right text-[11px] text-muted-foreground/80 tnum">
+        <div className="w-10 shrink-0 pb-7 pt-14 text-right text-xs text-muted-foreground/80 tnum">
           <div className="relative h-full">
             {ticks.map((t) => (
               <span key={t} className="absolute right-0 -translate-y-1/2 leading-none" style={{ top: `${(1 - t) * 100}%` }}>
@@ -93,7 +93,7 @@ export default function BillingBars({ entries, intro }: { entries: Entry[]; intr
           </div>
         </div>
 
-        <div className="relative flex flex-1 flex-col pt-14">
+        <div className="relative flex min-w-0 flex-1 flex-col overflow-x-clip pt-14">
           {/* Plot (top padding leaves room for the tooltip over the tallest bar) */}
           <div className="relative flex-1">
             {ticks.map((t) => (
@@ -115,10 +115,14 @@ export default function BillingBars({ entries, intro }: { entries: Entry[]; intr
                     className="absolute left-1/2 flex -translate-x-1/2 flex-col items-center"
                     style={{ bottom: `calc(${(current.invoiced / top) * 100}% + 10px)` }}
                   >
-                    <div className="whitespace-nowrap rounded-xl bg-foreground px-3 py-1.5 text-center text-background shadow-[var(--shadow-pop)]">
+                    <div
+                      className="whitespace-nowrap rounded-xl bg-foreground px-3 py-1.5 text-center text-background shadow-[var(--shadow-pop)] transition-transform duration-300 ease-[var(--ease-in-out)] motion-reduce:transition-none"
+                      // Edge columns: nudge the pill inward so it never hangs past the chart; the dot stays on the bar
+                      style={{ transform: active === 0 ? "translateX(25%)" : active === n - 1 ? "translateX(-25%)" : "translateX(0)" }}
+                    >
                       <p className="figure text-sm font-semibold leading-tight">{formatMoney(current.invoiced)}</p>
                       {current.outstanding > 0 && (
-                        <p className="tnum text-[11px] leading-tight text-background/60">{formatMoney(current.outstanding)} owed</p>
+                        <p className="tnum text-xs leading-tight text-background/60">{formatMoney(current.outstanding)} outstanding</p>
                       )}
                     </div>
                     <span className="mt-1.5 size-3 rounded-full border-[3px] border-foreground bg-background" />

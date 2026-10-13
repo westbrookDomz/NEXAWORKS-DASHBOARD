@@ -27,11 +27,11 @@ export default function ProjectCard({ project, intro, index }: { project: Projec
       </span>
 
       <div className="min-w-0">
-        <p className="truncate font-medium" title={project.title}>
+        <p className="break-words font-medium">
           {project.title}
         </p>
-        <p className="mt-0.5 flex gap-3 truncate text-sm text-muted-foreground">
-          <span className="truncate">
+        <p className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-muted-foreground">
+          <span className="break-words">
             {project.client}
             {project.jobs > 1 && `, ${project.jobs} jobs`}
           </span>
@@ -43,13 +43,13 @@ export default function ProjectCard({ project, intro, index }: { project: Projec
 
       <div className="col-start-2 md:col-start-auto md:text-right">
         <p className="text-xs text-muted-foreground">Billed</p>
-        <p className="figure text-[15px] font-semibold">{formatMoney(project.billed)}</p>
+        <p className="figure text-base font-semibold">{formatMoney(project.billed)}</p>
       </div>
 
       <div className="col-start-2 md:col-start-auto">
         <div className="mb-1.5 flex justify-between text-xs">
           <span className={cn(done ? "text-mint" : project.overdue ? "text-vermilion" : "text-muted-foreground")}>
-            {done ? "Paid in full" : project.overdue ? `${formatMoney(project.balance)} overdue` : `${formatMoney(project.balance)} to collect`}
+            {done ? "Paid in full" : project.overdue ? `${formatMoney(project.balance)} overdue` : `${formatMoney(project.balance)} outstanding`}
           </span>
           <span className="tnum font-medium">{progress}%</span>
         </div>

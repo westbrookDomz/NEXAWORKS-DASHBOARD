@@ -55,7 +55,7 @@ export default function RecentBilling({ entries }: { entries: Entry[] }) {
                     <span className="font-medium">{e.client}</span>
                   </div>
                 </td>
-                <td className="max-w-[260px] truncate py-3 pr-4 text-muted-foreground" title={e.project}>
+                <td className="max-w-[260px] break-words py-3 pr-4 text-muted-foreground">
                   {e.project}
                 </td>
                 <td className="tnum whitespace-nowrap py-3 pr-4 text-muted-foreground">{formatDate(e.issued)}</td>
@@ -65,7 +65,7 @@ export default function RecentBilling({ entries }: { entries: Entry[] }) {
                 <td className="py-3 pr-5 text-right lg:pr-6">
                   <span className="tnum font-medium">{formatMoney(e.total)}</span>
                   {e.balance > 0 && (
-                    <span className="tnum block text-xs text-muted-foreground">{formatMoney(e.balance)} owed</span>
+                    <span className="tnum block text-xs text-muted-foreground">{formatMoney(e.balance)} outstanding</span>
                   )}
                 </td>
               </tr>

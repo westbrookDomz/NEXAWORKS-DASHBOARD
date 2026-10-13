@@ -16,6 +16,8 @@ declare module "http" {
 
 app.use(
   express.json({
+    // Room for a resized profile photo sent from Settings
+    limit: "1mb",
     verify: (req, _res, buf) => {
       req.rawBody = buf;
     },

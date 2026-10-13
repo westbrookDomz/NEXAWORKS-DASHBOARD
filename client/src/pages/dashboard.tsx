@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useEntries } from "@/hooks/use-entries";
 import { useIntro } from "@/hooks/use-intro";
 import { change, formatMoney, monthlySeries, sum } from "@/lib/finance";
+import { count as plural } from "@/lib/plural";
 
 const money = (n: number) => formatMoney(n);
 const count = (n: number) => n.toLocaleString("en-US");
@@ -50,7 +51,7 @@ export default function Dashboard() {
         <PageHeader title="Overview" />
         <div className="panel flex flex-col items-start gap-4 p-6">
           <div>
-            <h2 className="text-lg">Couldn't load the payments sheet</h2>
+            <h2 className="text-lg">Couldn’t load the payments sheet</h2>
             <p className="mt-1 text-sm text-muted-foreground">Check the sheet connection in .env, then try again.</p>
           </div>
           <Button onClick={() => refetch()}>Try again</Button>
@@ -63,12 +64,12 @@ export default function Dashboard() {
     return (
       <div className="space-y-6">
         <PageHeader title="Overview" description="Loading the payments sheet" />
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 4 }, (_, i) => (
             <Skeleton key={i} className="h-[164px] rounded-[var(--radius-panel)] bg-card" />
           ))}
         </div>
-        <div className="grid gap-3 xl:grid-cols-12">
+        <div className="grid grid-cols-1 gap-3 xl:grid-cols-12">
           <Skeleton className="h-[440px] rounded-[var(--radius-panel)] bg-card xl:col-span-8" />
           <Skeleton className="h-[440px] rounded-[var(--radius-panel)] bg-card xl:col-span-4" />
         </div>
@@ -86,7 +87,7 @@ export default function Dashboard() {
       />
 
       <div className="space-y-3">
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <StatsCard
             title="Total billed"
             value={data.billed}
@@ -116,7 +117,7 @@ export default function Dashboard() {
             icon={<Hourglass />}
             hue="amber"
             goodWhen="down"
-            note={data.overdue ? `${data.overdue} ${data.overdue === 1 ? "invoice is" : "invoices are"} overdue` : "Nothing overdue"}
+            note={data.overdue ? plural(data.overdue, { one: "# invoice is overdue", other: "# invoices are overdue" }) : "Nothing overdue"}
             spark={data.spark("outstanding")}
             intro={intro}
           />
@@ -133,7 +134,7 @@ export default function Dashboard() {
           />
         </div>
 
-        <div className="grid gap-3 xl:grid-cols-12">
+        <div className="grid grid-cols-1 gap-3 xl:grid-cols-12">
           <div className="xl:col-span-8">
             <BillingBars entries={entries} intro={intro} />
           </div>
@@ -142,7 +143,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="grid gap-3 xl:grid-cols-12">
+        <div className="grid grid-cols-1 gap-3 xl:grid-cols-12">
           <div className="min-w-0 xl:col-span-8">
             <RecentBilling entries={entries} />
           </div>

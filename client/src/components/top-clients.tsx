@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { formatMoney, type Entry } from "@/lib/finance";
 import { easeOut } from "@/lib/motion";
+import { count } from "@/lib/plural";
 
 /** Biggest client by money billed, then the runners-up by share. */
 export default function TopClients({ entries, intro }: { entries: Entry[]; intro: boolean }) {
@@ -30,22 +31,22 @@ export default function TopClients({ entries, intro }: { entries: Entry[]; intro
 
       <div className="mt-4 flex gap-4">
         <div className="min-w-0 flex-1 rounded-2xl border border-line bg-raised/60 p-4">
-          <p className="truncate font-display text-lg font-semibold">{top.name}</p>
+          <p className="break-words font-display text-lg font-semibold">{top.name}</p>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            {top.jobs} {top.jobs === 1 ? "job" : "jobs"}, {Math.round((top.invoiced / total) * 100)}% of billing
+            {count(top.jobs, { one: "# job", other: "# jobs" })}, {Math.round((top.invoiced / total) * 100)}% of billing
           </p>
           <dl className="mt-5 grid grid-cols-2 gap-2">
             <div>
               <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <span className="size-2 rounded-full bg-primary" /> Collected
               </dt>
-              <dd className="figure mt-0.5 text-[15px] font-semibold">{formatMoney(top.collected)}</dd>
+              <dd className="figure mt-0.5 text-base font-semibold">{formatMoney(top.collected)}</dd>
             </div>
             <div>
               <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <span className="hatch size-2 rounded-full bg-primary/20 hatch-primary" /> Billed
               </dt>
-              <dd className="figure mt-0.5 text-[15px] font-semibold">{formatMoney(top.invoiced)}</dd>
+              <dd className="figure mt-0.5 text-base font-semibold">{formatMoney(top.invoiced)}</dd>
             </div>
           </dl>
         </div>
@@ -73,7 +74,7 @@ export default function TopClients({ entries, intro }: { entries: Entry[]; intro
           {rest.map((c, i) => (
             <li key={c.name}>
               <div className="flex items-baseline justify-between gap-3 text-sm">
-                <span className="truncate">{c.name}</span>
+                <span className="break-words">{c.name}</span>
                 <span className="tnum shrink-0 text-muted-foreground">{formatMoney(c.invoiced)}</span>
               </div>
               <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-ink/[0.05]">

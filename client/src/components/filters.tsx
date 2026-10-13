@@ -27,7 +27,7 @@ export function SearchField({
       {value && (
         <button
           onClick={() => onChange("")}
-          className="absolute right-1.5 top-1/2 grid size-7 -translate-y-1/2 place-items-center rounded-lg text-muted-foreground hover:text-foreground"
+          className="icon-btn absolute right-1 top-1/2 size-8 -translate-y-1/2 hover:text-foreground pointer-coarse:size-9"
           aria-label="Clear search"
         >
           <X className="size-3.5" />
@@ -54,7 +54,7 @@ export function SegmentedFilter<T extends string>({
   label: string;
 }) {
   return (
-    <div className="flex h-10 items-center rounded-xl border border-line bg-raised p-1" role="radiogroup" aria-label={label}>
+    <div className="scrollbar-none flex h-10 max-w-full shrink-0 items-center overflow-x-auto overscroll-x-contain rounded-xl border border-line bg-raised p-1" role="radiogroup" aria-label={label}>
       {options.map((o) => {
         const active = o === value;
         return (
@@ -64,7 +64,7 @@ export function SegmentedFilter<T extends string>({
             aria-checked={active}
             onClick={() => onChange(o)}
             className={cn(
-              "relative flex h-full items-center gap-1.5 rounded-lg px-3 text-sm transition-colors",
+              "relative flex h-full shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 text-sm transition-colors",
               active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
             )}
           >

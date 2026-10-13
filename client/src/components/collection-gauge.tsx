@@ -106,7 +106,7 @@ export default function CollectionGauge({ entries, intro }: { entries: Entry[]; 
             from={intro ? 0 : collectedPct}
             duration={1}
             format={(n) => `${n}%`}
-            className="figure text-[44px] font-semibold leading-none"
+            className="figure text-figure-xl font-semibold leading-none"
           />
           <span className="mt-1.5 text-xs text-muted-foreground">of {formatMoney(total)} collected</span>
         </div>
@@ -119,7 +119,7 @@ export default function CollectionGauge({ entries, intro }: { entries: Entry[]; 
               <span className={`size-2.5 shrink-0 rounded-[3px] ${p.swatch}`} />
               {p.label}
             </dt>
-            <dd className="figure mt-1 truncate text-[15px] font-semibold">{formatMoney(p.value)}</dd>
+            <dd className="figure mt-1 truncate text-base font-semibold">{formatMoney(p.value)}</dd>
           </div>
         ))}
       </dl>

@@ -74,8 +74,8 @@ export default function Projects() {
         <Skeleton className="h-80 rounded-[var(--radius-panel)] bg-card" />
       ) : (
         <div className="space-y-3">
-          {group("Awaiting payment", open, 0, q ? "No open projects match." : "Every project is paid up.")}
-          {group("Paid in full", settled, open.length, q ? "No settled projects match." : "Settled projects will show here.")}
+          {group("Awaiting payment", open, 0, q ? `No open projects match “${search.trim()}”` : "Every project is paid up.")}
+          {group("Paid in full", settled, open.length, q ? `No settled projects match “${search.trim()}”` : "Settled projects will show here.")}
         </div>
       )}
     </div>

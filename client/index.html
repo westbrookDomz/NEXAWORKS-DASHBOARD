@@ -5,7 +5,9 @@
     <!-- Apply the saved theme before first paint so there's no flash of the wrong theme -->
     <script>
       try {
-        document.documentElement.classList.add(localStorage.getItem("theme") === "light" ? "light" : "dark");
+        var pref = localStorage.getItem("theme");
+        var light = pref === "light" || (pref === "system" && matchMedia("(prefers-color-scheme: light)").matches);
+        document.documentElement.classList.add(light ? "light" : "dark");
       } catch (e) {
         document.documentElement.classList.add("dark");
       }

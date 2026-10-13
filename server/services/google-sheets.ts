@@ -22,6 +22,13 @@ export class GoogleSheetsService {
     }
   }
 
+  /** The spreadsheet's title, for the Settings page. */
+  async getTitle(spreadsheetId: string): Promise<string | null> {
+    if (!this.sheets) return null;
+    const meta = await this.sheets.spreadsheets.get({ spreadsheetId, fields: "properties.title" });
+    return meta.data.properties?.title ?? null;
+  }
+
   async getPaymentData(spreadsheetId: string): Promise<InsertPayment[]> {
     if (!this.sheets) {
       throw new Error("Google Sheets service not initialized. Check credentials.");

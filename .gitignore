@@ -8,3 +8,6 @@ vite.config.ts.*
 .local
 .vscode
 
+
+# Studio settings (profile, password hash)
+data/

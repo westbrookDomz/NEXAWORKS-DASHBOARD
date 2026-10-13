@@ -7,8 +7,12 @@ import { Button } from "@/components/ui/button";
 import { useEntries } from "@/hooks/use-entries";
 import { newId, useLocalStore } from "@/hooks/use-local-store";
 import { useToast } from "@/hooks/use-toast";
+import { useUndoToast } from "@/hooks/use-undo-toast";
+import { useSettings } from "@/hooks/use-settings";
+import { fillReviewTemplate } from "@/lib/review-template";
 import { summariseClients } from "@/lib/clients";
 import { formatDate } from "@/lib/finance";
+import { count } from "@/lib/plural";
 import { easeOut } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
@@ -44,7 +48,7 @@ function StarInput({ value, onChange }: { value: number; onChange: (n: number) =
           type="button"
           role="radio"
           aria-checked={value === n}
-          aria-label={`${n} star${n > 1 ? "s" : ""}`}
+          aria-label={count(n, { one: "# star", other: "# stars" })}
           onPointerEnter={() => setHover(n)}
           onClick={() => onChange(n)}
           animate={value === n && !reduce ? { scale: [1, 1.25, 1] } : { scale: 1 }}
@@ -61,6 +65,8 @@ function StarInput({ value, onChange }: { value: number; onChange: (n: number) =
 export default function Reviews() {
   const { entries } = useEntries();
   const { toast } = useToast();
+  const undoToast = useUndoToast();
+  const { data: settings } = useSettings();
   const [reviews, setReviews] = useLocalStore<Review[]>("studio-reviews", []);
   const [client, setClient] = useState("");
   const [rating, setRating] = useState(0);
@@ -90,12 +96,12 @@ export default function Reviews() {
   };
 
   const ask = async (name: string, project?: string) => {
-    const message = `Hi ${name}, thank you for working with Nexaworks${project ? ` on ${project}` : ""}. If you were happy with the result, would you share a line or two about the experience? It really helps the studio.`;
+    const message = fillReviewTemplate(settings?.studio.reviewTemplate ?? "", { client: name, project, studio: settings?.studio.name ?? "Nexaworks" });
     try {
       await navigator.clipboard.writeText(message);
       toast({ title: "Message copied", description: `Paste it into your chat with ${name}.` });
     } catch {
-      toast({ variant: "destructive", title: "Couldn't copy", description: "Your browser blocked clipboard access." });
+      toast({ variant: "destructive", title: "Couldn’t copy", description: "Allow clipboard access for this site, then copy the request again." });
     }
   };
 
@@ -103,16 +109,16 @@ export default function Reviews() {
     <div className="space-y-6">
       <PageHeader title="Reviews" description="What clients say about the work. Saved in this browser; keep the best ones for the portfolio." />
 
-      <div className="grid gap-3 xl:grid-cols-12">
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-12">
         {/* Summary */}
         <section className="panel p-5 lg:p-6 xl:col-span-4" aria-labelledby="rating-title">
           <h2 id="rating-title" className="text-lg">Rating</h2>
           <div className="mt-4 flex items-end gap-3">
-            <span className="figure text-[52px] font-semibold leading-none">{reviews.length ? average.toFixed(1) : "–"}</span>
+            <span className="figure text-figure-xl font-semibold leading-none">{reviews.length ? average.toFixed(1) : "–"}</span>
             <div className="pb-1.5">
               <Stars value={average} />
               <p className="mt-1 text-xs text-muted-foreground">
-                {reviews.length} {reviews.length === 1 ? "review" : "reviews"}
+                {count(reviews.length, { one: "# review", other: "# reviews" })}
               </p>
             </div>
           </div>
@@ -134,11 +140,11 @@ export default function Reviews() {
           {askable.length > 0 && (
             <div className="mt-6 border-t border-line pt-5">
               <p className="text-sm font-medium">Ask for a review</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">Paid-up clients who haven't left one yet.</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">Paid-up clients who haven’t left one yet.</p>
               <ul className="mt-3 space-y-1">
                 {askable.map((c) => (
                   <li key={c.name} className="flex items-center justify-between gap-3 rounded-xl px-2 py-1.5 hover:bg-ink/[0.03]">
-                    <span className="truncate text-sm">{c.name}</span>
+                    <span className="break-words text-sm">{c.name}</span>
                     <Button size="sm" variant="ghost" onClick={() => ask(c.name, c.jobs[0]?.project)}>
                       <Copy />
                       Copy request
@@ -156,7 +162,7 @@ export default function Reviews() {
             <h2 id="log-title" className="text-lg">Log a review</h2>
             <p className="mt-1 text-sm text-muted-foreground">Write down what a client said after a job.</p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <label htmlFor="review-client" className="text-sm font-medium">Client</label>
               <ClientCombobox id="review-client" value={client} onChange={setClient} options={clients.map((c) => c.name)} />
@@ -186,7 +192,7 @@ export default function Reviews() {
       </div>
 
       {reviews.length > 0 ? (
-        <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
           <AnimatePresence mode="popLayout" initial={false}>
             {reviews.map((r) => (
               <motion.li
@@ -199,18 +205,24 @@ export default function Reviews() {
                 className="panel group relative flex flex-col p-5"
               >
                 <Stars value={r.rating} />
-                {r.quote && <blockquote className="mt-4 font-display text-[17px] leading-snug">“{r.quote}”</blockquote>}
+                {r.quote && <blockquote className="mt-4 font-display text-lg leading-snug">“{r.quote}”</blockquote>}
                 <div className="mt-auto flex items-end justify-between gap-3 pt-5">
                   <div className="min-w-0">
                     <p className="text-sm font-medium">{r.client}</p>
-                    <p className="truncate text-xs text-muted-foreground">
+                    <p className="break-words text-xs text-muted-foreground">
                       {r.project ? `${r.project}, ` : ""}
                       {formatDate(new Date(r.date))}
                     </p>
                   </div>
                   <button
-                    onClick={() => setReviews((prev) => prev.filter((x) => x.id !== r.id))}
-                    className="grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-vermilion/10 hover:text-vermilion"
+                    onClick={() => {
+                      const index = reviews.findIndex((x) => x.id === r.id);
+                      setReviews((prev) => prev.filter((x) => x.id !== r.id));
+                      undoToast("Review deleted", () =>
+                        setReviews((prev) => (prev.some((x) => x.id === r.id) ? prev : [...prev.slice(0, index), r, ...prev.slice(index)])),
+                      );
+                    }}
+                    className="icon-btn hover:bg-vermilion/10 hover:text-vermilion"
                     aria-label={`Delete review from ${r.client}`}
                     title="Delete"
                   >

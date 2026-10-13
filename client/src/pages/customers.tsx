@@ -7,10 +7,12 @@ import { StatusBadge } from "@/components/status-badge";
 import { SearchField, SegmentedFilter } from "@/components/filters";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { useEntries } from "@/hooks/use-entries";
 import { useIntro } from "@/hooks/use-intro";
 import { summariseClients, type ClientSummary } from "@/lib/clients";
 import { formatDate, formatMoney } from "@/lib/finance";
+import { count } from "@/lib/plural";
 import { easeOut } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
@@ -44,9 +46,9 @@ function ClientCard({ client, onOpen, intro, index }: { client: ClientSummary; o
           {client.name.charAt(0).toUpperCase()}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate font-display text-[17px] font-semibold">{client.name}</p>
+          <p className="break-words font-display text-lg font-semibold">{client.name}</p>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            {client.jobs.length} {client.jobs.length === 1 ? "job" : "jobs"} since {formatDate(client.first, "MMM yyyy")}
+            {count(client.jobs.length, { one: "# job", other: "# jobs" })} since {formatDate(client.first, "MMM yyyy")}
           </p>
         </div>
         {client.overdue > 0 ? (
@@ -64,7 +66,7 @@ function ClientCard({ client, onOpen, intro, index }: { client: ClientSummary; o
           <dd className="figure mt-0.5 text-lg font-semibold">{formatMoney(client.billed)}</dd>
         </div>
         <div>
-          <dt className="text-xs text-muted-foreground">{client.owed > 0 ? "Still owed" : "Collected"}</dt>
+          <dt className="text-xs text-muted-foreground">{client.owed > 0 ? "Outstanding" : "Collected"}</dt>
           <dd className={cn("figure mt-0.5 text-lg font-semibold", client.overdue > 0 ? "text-vermilion" : client.owed > 0 && "text-amber")}>
             {formatMoney(client.owed > 0 ? client.owed : client.collected)}
           </dd>
@@ -77,12 +79,12 @@ function ClientCard({ client, onOpen, intro, index }: { client: ClientSummary; o
 
       <div className="mt-auto flex flex-wrap gap-1.5 pt-4">
         {client.methods.map((m) => (
-          <span key={m} className="rounded-md border border-line px-2 py-0.5 text-[11px] text-muted-foreground">
+          <span key={m} className="rounded-md border border-line px-2 py-0.5 text-xs text-muted-foreground">
             {m}
           </span>
         ))}
         {client.notes.map((n) => (
-          <span key={n} className="rounded-md bg-primary/10 px-2 py-0.5 text-[11px] text-primary">
+          <span key={n} className="rounded-md bg-primary/10 px-2 py-0.5 text-xs text-primary">
             {n}
           </span>
         ))}
@@ -113,7 +115,7 @@ function ClientSheet({ client, onClose }: { client: ClientSummary | null; onClos
                 {[
                   ["Billed", client.billed, ""],
                   ["Collected", client.collected, ""],
-                  ["Owed", client.owed, client.overdue > 0 ? "text-vermilion" : client.owed > 0 ? "text-amber" : ""],
+                  ["Outstanding", client.owed, client.overdue > 0 ? "text-vermilion" : client.owed > 0 ? "text-amber" : ""],
                 ].map(([label, value, tone]) => (
                   <div key={label as string} className="rounded-xl bg-raised p-3">
                     <dt className="text-xs text-muted-foreground">{label}</dt>
@@ -122,7 +124,7 @@ function ClientSheet({ client, onClose }: { client: ClientSummary | null; onClos
                 ))}
               </dl>
             </div>
-            <div className="flex-1 overflow-y-auto p-3">
+            <div className="flex-1 overflow-y-auto overscroll-contain p-3">
               <p className="px-3 pb-2 pt-2 text-xs font-medium text-muted-foreground">Job history</p>
               <ul>
                 {client.jobs.map((e) => (
@@ -170,9 +172,9 @@ export default function Customers() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Customers" description="Everyone the studio has billed, what they've paid and what they still owe." />
+      <PageHeader title="Customers" description="Everyone the studio has billed, what they’ve paid and what they still owe." />
 
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <StatsCard title="Clients" value={clients.length} format={(n) => `${n}`} icon={<UserRound />} hue="violet" note="On the payments sheet" intro={intro} />
         <StatsCard
           title="Come back for more"
@@ -184,7 +186,7 @@ export default function Customers() {
           intro={intro}
         />
         <StatsCard
-          title="Owe money"
+          title="Have a balance"
           value={owing.length}
           format={(n) => `${n}`}
           icon={<Wallet />}
@@ -200,23 +202,28 @@ export default function Customers() {
       </div>
 
       {isLoading ? (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 6 }, (_, i) => (
             <Skeleton key={i} className="h-60 rounded-[var(--radius-panel)] bg-card" />
           ))}
         </div>
       ) : shown.length ? (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
           {shown.map((c, i) => (
             <ClientCard key={c.name} client={c} index={i} intro={intro} onOpen={() => setOpenName(c.name)} />
           ))}
         </div>
       ) : (
         <div className="panel px-6 py-14 text-center">
-          <p className="font-medium">{clients.length ? "No clients match." : "No clients yet."}</p>
+          <p className="font-medium">{clients.length ? `No clients match “${search.trim()}”` : "No clients yet"}</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {clients.length ? "Try another name or project." : "Clients appear here once they're on the payments sheet."}
+            {clients.length ? "Try another name or project." : "Clients appear here once they’re on the payments sheet."}
           </p>
+          {clients.length > 0 && (
+            <Button variant="outline" size="sm" className="mt-4" onClick={() => setSearch("")}>
+              Clear search
+            </Button>
+          )}
         </div>
       )}
 
